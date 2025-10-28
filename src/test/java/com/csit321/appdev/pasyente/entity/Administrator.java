@@ -44,6 +44,8 @@ public class Administrator {
     public List<User> getUsers() { return users; }
     public void setUsers(List<User> users) { this.users = users; }
 
+    // FUNCSTIONS KAY DI PA FINAL
+
     // Functions to manage users
     public void addUser(User user) {
         users.add(user);
