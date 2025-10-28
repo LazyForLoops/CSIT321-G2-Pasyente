@@ -4,21 +4,23 @@ import jakarta.persistence.*;
 
 import java.util.List;
 
+@Entity
+@Table(name = "PATIENT")
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long patientId;
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Long patient_id;
+    @OneToMany
     private List<Appointments> appointments;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id")
     private List<Doctor> doctor;
 
     public void setPatientId(Long patientId){
-        this.patientId = patientId;
+        this.patient_id = patientId;
     }
-    public Long getUserId(){
-        return patientId;
+    public Long getPatientId(){
+        return patient_id;
     }
 
     public void setDoctor(List<Doctor> doctor){

@@ -2,6 +2,8 @@ package com.csit321.appdev.pasyente.entity;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "Student")
 public class Appointments {
@@ -14,9 +16,9 @@ public class Appointments {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id")
     private Patient patient;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id")
-    private Doctor doctor;
+    private List<Doctor> doctor;
 
     public Long getAppointmentID(){
         return appointmentID;
@@ -38,10 +40,10 @@ public class Appointments {
     public Patient getPatient() {
         return patient;
     }
-    public void setDoctor(Doctor doctor) {
+    public void setDoctor(List<Doctor> doctor) {
         this.doctor = doctor;
     }
-    public Doctor getDoctor() {
+    public List<Doctor> getDoctor() {
         return doctor;
     }
 }
