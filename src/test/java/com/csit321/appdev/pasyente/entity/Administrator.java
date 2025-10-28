@@ -44,27 +44,29 @@ public class Administrator {
     public List<User> getUsers() { return users; }
     public void setUsers(List<User> users) { this.users = users; }
 
+    // FUNCSTIONS KAY DI PA FINAL
+
     // Functions to manage users
     public void addUser(User user) {
         users.add(user);
-        System.out.println("👤 Added user: " + user.getName());
+        System.out.println("Added user: " + user.getName());
     }
 
     public User searchUser(Long userId) {
         for (User user : users) {
             if (user.getUserId().equals(userId)) {
-                System.out.println("🔍 Found user: " + user.getName());
+                System.out.println("Found user: " + user.getName());
                 return user;
             }
         }
-        System.out.println("⚠️ User not found.");
+        System.out.println("User not found.");
         return null;
     }
 
     public void removeUser(Long userId) {
         users.removeIf(user -> {
             boolean match = user.getUserId().equals(userId);
-            if (match) System.out.println("🗑️ Removed user: " + user.getName());
+            if (match) System.out.println("Removed user: " + user.getName());
             return match;
         });
     }

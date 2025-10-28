@@ -39,10 +39,10 @@ public class User {
     // Login function (for demonstration)
     public boolean login(String inputId, String inputPassword) {
         if (this.password.equals(inputPassword)) {
-            System.out.println("✅ Login successful for " + this.name);
+            System.out.println("Login successful for " + this.name);
             return true;
         } else {
-            System.out.println("❌ Invalid credentials for " + this.name);
+            System.out.println("Invalid credentials for " + this.name);
             return false;
         }
     }
