@@ -18,7 +18,7 @@ public class Appointments {
     private Patient patient;
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id")
-    private List<Doctor> doctor;
+    private Doctor doctor;
 
     public Long getAppointmentID(){
         return appointmentID;
@@ -40,10 +40,10 @@ public class Appointments {
     public Patient getPatient() {
         return patient;
     }
-    public void setDoctor(List<Doctor> doctor) {
+    public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
-    public List<Doctor> getDoctor() {
+    public Doctor getDoctor() {
         return doctor;
     }
 }
