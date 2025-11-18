@@ -10,12 +10,9 @@ public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long doctor_id;
-    @OneToMany
-    private List<Appointments> appointments;
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id")
-    private List<Patient> patient;
-
+ /*   @OneToMany
+    private List<Appointments> appointments;*/ 
+  
     public void setDoctorId(Long doctorId){
         this.doctor_id = doctorId;
     }
@@ -23,16 +20,10 @@ public class Doctor {
         return doctor_id;
     }
 
-    public void setPatient(List<Patient> patient){
-        this.patient = patient;
-    }
-    public List<Patient> getPatient() {
-        return patient;
-    }
-    public void setAppointments(List<Appointments> appointments){
+    /*public void setAppointments(List<Appointments> appointments){
         this.appointments = appointments;
     }
     public List<Appointments> getAppointments(){
         return appointments;
-    }
+    }*/
 }
