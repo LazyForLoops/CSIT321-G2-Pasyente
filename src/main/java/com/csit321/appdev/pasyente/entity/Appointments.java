@@ -2,10 +2,8 @@ package com.csit321.appdev.pasyente.entity;
 
 import jakarta.persistence.*;
 
-import java.util.List;
-
 @Entity
-@Table(name = "Student")
+@Table(name = "Appointment")
 public class Appointments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
