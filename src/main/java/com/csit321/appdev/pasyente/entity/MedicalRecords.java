@@ -13,6 +13,9 @@ public class MedicalRecords {
     private Patient patient;
     @Column(name = "description")
     private String description;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
 
     public void setRecordID(Long recordID){
         this.recordID = recordID;
@@ -32,5 +35,11 @@ public class MedicalRecords {
     }
     public Patient getPatient() {
         return patient;
+    }
+    public void setDoctor(Doctor doctor){
+        this.doctor = doctor;
+    }
+    public Doctor getDoctor(){
+        return doctor;
     }
 }
