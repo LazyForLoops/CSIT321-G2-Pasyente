@@ -2,7 +2,6 @@ package com.csit321.appdev.pasyente.entity;
 
 import jakarta.persistence.*;
 
-import java.util.List;
 
 @Entity
 @Table(name = "PATIENT")
