@@ -23,7 +23,7 @@ public class Doctor {
         return doctor_id;
     }
 
-    public void setPatient(List<Patient> doctor){
+    public void setPatient(List<Patient> patient){
         this.patient = patient;
     }
     public List<Patient> getPatient() {
