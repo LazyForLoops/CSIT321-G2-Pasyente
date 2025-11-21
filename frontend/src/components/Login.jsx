@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // 1. Import Link for routing
 
-function Login({ onLogin, onSwitchToRegister }) {
+function Login({ onLogin }) { // 2. Removed onSwitchToRegister prop (not needed anymore)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -59,7 +60,8 @@ function Login({ onLogin, onSwitchToRegister }) {
           <a href="#" style={styles.forgotLink}>Forgot Password?</a>
           <p style={styles.registerText}>
             Don't have an account? 
-            <span onClick={onSwitchToRegister} style={styles.registerLink}> Register</span>
+            {/* 3. REPLACED SPAN WITH LINK */}
+            <Link to="/register" style={styles.registerLink}> Register</Link>
           </p>
         </div>
       </div>
@@ -73,7 +75,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: '100vh',
-    backgroundColor: '#f9fafb', // A very light gray background
+    backgroundColor: '#f9fafb',
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
   },
   card: {
@@ -82,14 +84,14 @@ const styles = {
     padding: '40px',
     backgroundColor: 'white',
     borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)', // Softer shadow
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
     textAlign: 'center'
   },
   header: {
     marginBottom: '30px'
   },
   logo: {
-    color: '#5865F2', // The blue brand color
+    color: '#5865F2',
     fontWeight: 'bold',
     fontSize: '1.5rem',
     display: 'flex',
@@ -129,14 +131,14 @@ const styles = {
     border: '1px solid #e2e8f0',
     fontSize: '1rem',
     color: '#2d3748',
-    boxSizing: 'border-box', // Important for padding to not affect width
+    boxSizing: 'border-box',
     outline: 'none',
     transition: 'border-color 0.2s'
   },
   button: {
     width: '100%',
     padding: '12px',
-    backgroundColor: '#5865F2', // Brand blue color
+    backgroundColor: '#5865F2',
     color: 'white',
     border: 'none',
     borderRadius: '6px',
@@ -160,11 +162,13 @@ const styles = {
   registerText: {
     margin: 0
   },
+  // Updated Link Style (Added textDecoration none)
   registerLink: {
     color: '#5865F2',
     cursor: 'pointer',
     fontWeight: '600',
-    marginLeft: '4px'
+    marginLeft: '4px',
+    textDecoration: 'none' 
   }
 };
 
