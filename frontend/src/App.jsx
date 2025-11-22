@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
 import Login from './components/Login';
 import Register from './components/Register';
 import TopNavbar from './components/TopNavbar';
@@ -11,49 +13,30 @@ import Medications from './components/Medications';
 import Profile from './components/Profile';
 
 function App() {
-  const [user, setUser] = useState(null); 
+  // CHANGED: Initialize state by checking Local Storage first
+  const [user, setUser] = useState(() => {
+    return localStorage.getItem('pasyente_user') || null;
+  });
+
   const [currentView, setCurrentView] = useState('login'); 
-  const [activePage, setActivePage] = useState('dashboard'); 
-
-  // --- NEW: Mobile Responsiveness State ---
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Listen for screen resize
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth >= 768) {
-        setIsSidebarOpen(false); // Reset sidebar on desktop
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleLogin = (email) => {
     const name = email.split('@')[0];
-    setUser(name.charAt(0).toUpperCase() + name.slice(1)); 
+    const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+    
+    // CHANGED: Save the user to Local Storage when they login
+    localStorage.setItem('pasyente_user', formattedName);
+    setUser(formattedName); 
   };
   
   const handleLogout = () => {
+    // CHANGED: Remove the user from Local Storage when they logout
+    localStorage.removeItem('pasyente_user');
     setUser(null);
     setCurrentView('login');
-    setActivePage('dashboard');
   };
 
-  const renderPage = () => {
-    switch(activePage) {
-      case 'dashboard': return <Dashboard userName={user} />;
-      case 'records': return <HealthRecords />;
-      case 'appointments': return <Appointments />;
-      case 'medications': return <Medications />;
-      case 'settings': return <Settings />;
-      case 'profile': return <Profile />;
-      default: return <Dashboard userName={user} />;
-    }
-  };
-
+  // --- AUTHENTICATION CHECK ---
   if (!user) {
     if (currentView === 'login') {
       return <Login onLogin={handleLogin} onSwitchToRegister={() => setCurrentView('register')} />;
@@ -63,55 +46,37 @@ function App() {
   }
 
   return (
-    <div style={styles.layout}>
-      <TopNavbar 
-        user={user} 
-        onLogout={handleLogout} 
-        activePage={activePage} 
-        onNavigate={setActivePage}
-        // Pass mobile props
-        isMobile={isMobile}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
+    <BrowserRouter>
+      <div style={styles.layout}>
+        
+        <TopNavbar user={user} onLogout={handleLogout} />
+        <Sidebar />
 
-      <Sidebar 
-        activePage={activePage} 
-        onNavigate={(page) => {
-          setActivePage(page);
-          setIsSidebarOpen(false); // Close sidebar when link clicked on mobile
-        }} 
-        // Pass mobile props
-        isMobile={isMobile}
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+        <main style={styles.mainContent}>
+          <div style={styles.scrollableArea}>
+            
+            <Routes>
+              <Route path="/" element={<Dashboard userName={user} />} />
+              <Route path="/dashboard" element={<Navigate to="/" />} />
+              <Route path="/records" element={<HealthRecords />} />
+              <Route path="/appointments" element={<Appointments />} />
+              <Route path="/medications" element={<Medications />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
 
-      {/* Mobile Overlay (Dark background when sidebar is open) */}
-      {isMobile && isSidebarOpen && (
-        <div style={styles.overlay} onClick={() => setIsSidebarOpen(false)}></div>
-      )}
-
-      <main style={{
-        ...styles.mainContent,
-        marginLeft: isMobile ? 0 : '240px', // REMOVE MARGIN ON MOBILE
-        padding: isMobile ? '80px 15px 20px 15px' : '100px 40px 40px 40px' // Smaller padding on mobile
-      }}>
-        <div style={styles.scrollableArea}>
-          {renderPage()}
-          
-          <footer style={styles.footer}>
-            <div>© 2025 Pasyente Inc.</div>
-            {!isMobile && (
+            <footer style={styles.footer}>
+              <div>© 2025 Pasyente Inc.</div>
               <div style={styles.footerLinks}>
                 <span>Company</span>
                 <span>Resources</span>
                 <span>Legal</span>
               </div>
-            )}
-          </footer>
-        </div>
-      </main>
-    </div>
+            </footer>
+          </div>
+        </main>
+      </div>
+    </BrowserRouter>
   );
 }
 
@@ -119,14 +84,14 @@ const styles = {
   layout: {
     backgroundColor: '#f9fafb',
     minHeight: '100vh',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    overflowX: 'hidden' // Prevent horizontal scroll
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
   },
   mainContent: {
+    marginLeft: '240px', 
+    paddingTop: '100px', 
     minHeight: '100vh',
     display: 'flex',
-    flexDirection: 'column',
-    transition: 'margin-left 0.3s ease' // Smooth transition
+    flexDirection: 'column'
   },
   scrollableArea: {
     flex: 1,
@@ -135,26 +100,14 @@ const styles = {
   },
   footer: {
     marginTop: 'auto',
-    padding: '30px 0',
+    padding: '30px 40px',
     borderTop: '1px solid #e2e8f0',
     display: 'flex',
     justifyContent: 'space-between',
     color: '#718096',
-    fontSize: '0.85rem',
-    flexWrap: 'wrap'
+    fontSize: '0.85rem'
   },
-  footerLinks: { display: 'flex', gap: '20px', fontWeight: '500', cursor: 'pointer' },
-  
-  // Overlay for mobile sidebar
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    zIndex: 40 // Below sidebar (50) but above content
-  }
+  footerLinks: { display: 'flex', gap: '20px', fontWeight: '500', cursor: 'pointer' }
 };
 
 export default App;

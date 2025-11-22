@@ -1,61 +1,255 @@
 import React from 'react';
 
 function HealthRecords() {
+  // Mock data matching the reference image
+  const records = [
+    { 
+      date: "2024-10-25", 
+      desc: "Annual physical check-up, general health assessment, blood pressure normal.", 
+      doctor: "Dr. Emily White", 
+      type: "Consultation", 
+      status: "Completed" 
+    },
+    { 
+      date: "2024-09-15", 
+      desc: "Routine blood test results for cholesterol and glucose levels.", 
+      doctor: "Dr. Emily White", 
+      type: "Lab Result", 
+      status: "Completed" 
+    },
+    { 
+      date: "2024-08-01", 
+      desc: "Prescription refill for chronic medication, discussion on dosage.", 
+      doctor: "Dr. Michael Green", 
+      type: "Prescription", 
+      status: "Completed" 
+    },
+    { 
+      date: "2024-07-10", 
+      desc: "Follow-up on allergy symptoms, seasonal allergy management plan.", 
+      doctor: "Dr. Sarah Johnson", 
+      type: "Consultation", 
+      status: "Completed" 
+    },
+    { 
+      date: "2024-06-20", 
+      desc: "Vaccination for annual flu shot and tetanus booster.", 
+      doctor: "Dr. Alex Lee", 
+      type: "Immunization", 
+      status: "Completed" 
+    },
+    { 
+      date: "2024-05-05", 
+      desc: "Initial consultation for persistent back pain, referred to physical therapy.", 
+      doctor: "Dr. Michael Green", 
+      type: "Consultation", 
+      status: "Completed" 
+    },
+    { 
+      date: "2024-04-12", 
+      desc: "MRI scan of lumbar spine results review.", 
+      doctor: "Dr. Michael Green", 
+      type: "Imaging", 
+      status: "Completed" 
+    },
+    { 
+      date: "2024-03-01", 
+      desc: "Dermatology visit for skin rash diagnosis and treatment plan.", 
+      doctor: "Dr. Lily Chen", 
+      type: "Dermatology", 
+      status: "Completed" 
+    },
+  ];
+
   return (
     <div style={styles.container}>
+      {/* Page Header */}
       <div style={styles.header}>
-        <h1 style={styles.pageTitle}>Health Records</h1>
-        <button style={styles.primaryBtn}>+ Upload Record</button>
+        <div>
+          <h1 style={styles.pageTitle}>Health Records</h1>
+          <p style={styles.pageSubtitle}>Overview of all your past medical consultations, lab results, and procedures.</p>
+        </div>
+        <button style={styles.primaryBtn}>+ Add New Record</button>
       </div>
 
+      {/* Content Card */}
       <div style={styles.card}>
-        <table style={styles.table}>
-          <thead>
-            <tr style={styles.headerRow}>
-              <th style={styles.th}>Date</th>
-              <th style={styles.th}>Record Name</th>
-              <th style={styles.th}>Doctor / Clinic</th>
-              <th style={styles.th}>Type</th>
-              <th style={styles.th}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <TableRow date="Oct 20, 2025" name="Annual Physical Exam" doctor="Dr. Smith" type="Checkup" />
-            <TableRow date="Oct 18, 2025" name="Blood Test Results" doctor="City Lab" type="Lab Report" />
-            <TableRow date="Sep 05, 2025" name="COVID-19 Vaccination" doctor="Health Center" type="Immunization" />
-            <TableRow date="Aug 12, 2025" name="Chest X-Ray" doctor="St. Luke's Hospital" type="Imaging" />
-          </tbody>
-        </table>
+        <div style={styles.cardHeader}>
+          <h3 style={styles.cardTitle}>Your Health History</h3>
+          <p style={styles.cardSubtitle}>A detailed list of all your medical interactions.</p>
+        </div>
+
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr style={styles.headerRow}>
+                <th style={{...styles.th, width: '120px'}}>Date</th>
+                <th style={styles.th}>Description</th>
+                <th style={{...styles.th, width: '160px'}}>Doctor</th>
+                <th style={{...styles.th, width: '120px'}}>Type</th>
+                <th style={{...styles.th, width: '100px'}}>Status</th>
+                <th style={{...styles.th, width: '80px', textAlign: 'center'}}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((record, index) => (
+                <TableRow key={index} data={record} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={styles.cardFooter}>
+          Showing {records.length} records
+        </div>
       </div>
     </div>
   );
 }
 
-function TableRow({ date, name, doctor, type }) {
+function TableRow({ data }) {
   return (
     <tr style={styles.row}>
-      <td style={styles.td}>{date}</td>
-      <td style={{...styles.td, fontWeight: '600', color: '#2d3748'}}>{name}</td>
-      <td style={styles.td}>{doctor}</td>
-      <td style={styles.td}><span style={styles.badge}>{type}</span></td>
-      <td style={styles.td}><button style={styles.linkBtn}>Download</button></td>
+      <td style={{...styles.td, fontWeight: '600', color: '#1a202c'}}>{data.date}</td>
+      <td style={styles.td}>{data.desc}</td>
+      <td style={{...styles.td, fontWeight: '600'}}>{data.doctor}</td>
+      <td style={styles.td}>
+        <span style={styles.typeBadge}>{data.type}</span>
+      </td>
+      <td style={styles.td}>
+        <span style={styles.statusBadge}>{data.status}</span>
+      </td>
+      <td style={{...styles.td, textAlign: 'center'}}>
+        <button style={styles.iconBtn} title="View Details">
+          {/* Simple Eye Icon using SVG */}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </td>
     </tr>
   );
 }
 
 const styles = {
-  container: { padding: '40px', width: '100%', maxWidth: '1200px', margin: '0 auto' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
-  pageTitle: { fontSize: '2rem', fontWeight: '700', color: '#1a202c', margin: 0 },
-  primaryBtn: { padding: '10px 20px', backgroundColor: '#5865F2', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' },
-  card: { backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  headerRow: { borderBottom: '2px solid #edf2f7', textAlign: 'left' },
-  th: { padding: '15px', color: '#718096', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  row: { borderBottom: '1px solid #edf2f7' },
-  td: { padding: '15px', color: '#4a5568', fontSize: '0.95rem' },
-  badge: { backgroundColor: '#edf2f7', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', color: '#4a5568', fontWeight: '500' },
-  linkBtn: { color: '#5865F2', background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer' }
+  container: { 
+    padding: '40px', 
+    width: '100%', 
+    maxWidth: '1200px', 
+    margin: '0 auto',
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+  },
+  header: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'flex-start', 
+    marginBottom: '30px' 
+  },
+  pageTitle: { 
+    fontSize: '2rem', 
+    fontWeight: '800', 
+    color: '#1a202c', 
+    margin: '0 0 8px 0' 
+  },
+  pageSubtitle: { 
+    color: '#718096', 
+    margin: 0, 
+    fontSize: '1rem' 
+  },
+  primaryBtn: { 
+    padding: '12px 24px', 
+    backgroundColor: '#5865F2', 
+    color: 'white', 
+    border: 'none', 
+    borderRadius: '8px', 
+    fontWeight: '600', 
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    boxShadow: '0 2px 5px rgba(88, 101, 242, 0.3)'
+  },
+  card: { 
+    backgroundColor: 'white', 
+    borderRadius: '12px', 
+    padding: '30px', 
+    border: '1px solid #e2e8f0', 
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)' 
+  },
+  cardHeader: { marginBottom: '25px' },
+  cardTitle: { 
+    fontSize: '1.25rem', 
+    fontWeight: '700', 
+    color: '#2d3748', 
+    margin: '0 0 5px 0' 
+  },
+  cardSubtitle: { 
+    fontSize: '0.9rem', 
+    color: '#718096', 
+    margin: 0 
+  },
+  tableWrapper: { overflowX: 'auto' }, // Allows scrolling on small screens
+  table: { 
+    width: '100%', 
+    borderCollapse: 'separate', 
+    borderSpacing: '0' 
+  },
+  headerRow: { textAlign: 'left' },
+  th: { 
+    padding: '15px 10px', 
+    color: '#718096', 
+    fontSize: '0.75rem', 
+    textTransform: 'uppercase', 
+    fontWeight: '700', 
+    letterSpacing: '0.05em',
+    borderBottom: '1px solid #e2e8f0'
+  },
+  row: { 
+    transition: 'background-color 0.2s' 
+  },
+  td: { 
+    padding: '16px 10px', 
+    color: '#4a5568', 
+    fontSize: '0.9rem', 
+    verticalAlign: 'middle',
+    borderBottom: '1px solid #f7fafc'
+  },
+  // Badges
+  typeBadge: { 
+    backgroundColor: '#fbcfe8', // Light pink
+    color: '#9d174d', // Dark pink/red
+    padding: '4px 12px', 
+    borderRadius: '999px', 
+    fontSize: '0.75rem', 
+    fontWeight: '700',
+    display: 'inline-block'
+  },
+  statusBadge: { 
+    backgroundColor: '#def7ec', // Light green
+    color: '#03543f', // Dark green
+    border: '1px solid #bcf0da',
+    padding: '4px 12px', 
+    borderRadius: '999px', 
+    fontSize: '0.75rem', 
+    fontWeight: '700',
+    display: 'inline-block'
+  },
+  iconBtn: { 
+    background: 'none', 
+    border: 'none', 
+    color: '#718096', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    transition: 'color 0.2s',
+    padding: '5px'
+  },
+  cardFooter: {
+    marginTop: '20px',
+    textAlign: 'right',
+    fontSize: '0.85rem',
+    color: '#718096'
+  }
 };
 
 export default HealthRecords;
