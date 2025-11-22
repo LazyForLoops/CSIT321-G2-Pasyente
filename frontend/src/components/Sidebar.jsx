@@ -1,39 +1,39 @@
 import React from 'react';
+// Import Hooks
+import { useNavigate, useLocation } from 'react-router-dom';
 
-function Sidebar({ activePage, onNavigate, isMobile, isOpen, onClose }) {
-  
-  const getMenuItemStyle = (page) => {
-    return activePage === page ? styles.menuItemActive : styles.menuItem;
+function Sidebar() {
+  const navigate = useNavigate();   // To change pages
+  const location = useLocation();   // To check current URL
+
+  // Helper to check if a menu item matches the current URL path
+  const isActive = (path) => {
+    if (path === '/' && location.pathname === '/') return true;
+    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    return false;
+  };
+
+  const getStyle = (path) => {
+    return isActive(path) ? styles.menuItemActive : styles.menuItem;
   };
 
   return (
-    <aside style={{
-      ...styles.sidebar,
-      // DYNAMIC STYLES
-      left: isMobile ? (isOpen ? '0' : '-250px') : '0', // Hide on mobile if closed
-      boxShadow: isMobile && isOpen ? '2px 0 10px rgba(0,0,0,0.2)' : 'none',
-      width: isMobile ? '250px' : '240px',
-    }}>
-      
-      {/* Close Button for Mobile */}
-      {isMobile && (
-        <div style={styles.closeBtnContainer}>
-          <h3 style={{margin: 0, color: '#5865F2'}}>Menu</h3>
-          <button onClick={onClose} style={styles.closeBtn}>✕</button>
-        </div>
-      )}
-
+    <aside style={styles.sidebar}>
       <div style={styles.menuGroup}>
-        <div onClick={() => onNavigate('dashboard')} style={getMenuItemStyle('dashboard')}>
+        
+        <div onClick={() => navigate('/')} style={getStyle('/')}>
            <span style={styles.icon}>📊</span> Dashboard
         </div>
-        <div onClick={() => onNavigate('records')} style={getMenuItemStyle('records')}>
+
+        <div onClick={() => navigate('/records')} style={getStyle('/records')}>
            <span style={styles.icon}>📄</span> Health Records
         </div>
-        <div onClick={() => onNavigate('appointments')} style={getMenuItemStyle('appointments')}>
+
+        <div onClick={() => navigate('/appointments')} style={getStyle('/appointments')}>
            <span style={styles.icon}>📅</span> Appointments
         </div>
-        <div onClick={() => onNavigate('medications')} style={getMenuItemStyle('medications')}>
+
+        <div onClick={() => navigate('/medications')} style={getStyle('/medications')}>
            <span style={styles.icon}>💊</span> Medications
         </div>
       </div>
@@ -42,10 +42,11 @@ function Sidebar({ activePage, onNavigate, isMobile, isOpen, onClose }) {
 
       <div style={styles.sectionTitle}>ACCOUNT</div>
       <div style={styles.menuGroup}>
-        <div onClick={() => onNavigate('profile')} style={getMenuItemStyle('profile')}>
+        <div onClick={() => navigate('/profile')} style={getStyle('/profile')}>
            <span style={styles.icon}>👤</span> Profile
         </div>
-        <div onClick={() => onNavigate('settings')} style={getMenuItemStyle('settings')}>
+        
+        <div onClick={() => navigate('/settings')} style={getStyle('/settings')}>
            <span style={styles.icon}>⚙️</span> Settings
         </div>
       </div>
@@ -53,30 +54,11 @@ function Sidebar({ activePage, onNavigate, isMobile, isOpen, onClose }) {
   );
 }
 
+// ... (KEEP ALL EXISTING STYLES THE SAME) ...
 const styles = {
-  sidebar: {
-    backgroundColor: '#ffffff',
-    top: '60px', 
-    bottom: 0,
-    position: 'fixed',
-    padding: '20px',
-    borderRight: '1px solid #e0e0e0',
-    zIndex: 50,
-    transition: 'left 0.3s ease' // Smooth slide animation
-  },
-  closeBtnContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-    borderBottom: '1px solid #f0f0f0',
-    paddingBottom: '10px'
-  },
-  closeBtn: {
-    background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#718096'
-  },
+  sidebar: { width: '240px', backgroundColor: '#ffffff', top: '60px', bottom: 0, position: 'fixed', left: 0, padding: '20px', borderRight: '1px solid #e0e0e0', zIndex: 50 },
   menuGroup: { display: 'flex', flexDirection: 'column', gap: '5px' },
-  menuItem: { padding: '10px 15px', color: '#4a5568', cursor: 'pointer', borderRadius: '6px', fontSize: '0.95rem', display: 'flex', alignItems: 'center' },
+  menuItem: { padding: '10px 15px', color: '#4a5568', cursor: 'pointer', borderRadius: '6px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', transition: 'background-color 0.2s' },
   menuItemActive: { padding: '10px 15px', backgroundColor: '#f0f2f5', color: '#5865F2', fontWeight: '600', cursor: 'pointer', borderRadius: '6px', fontSize: '0.95rem', display: 'flex', alignItems: 'center' },
   icon: { marginRight: '12px', fontSize: '1.1rem' },
   sectionTitle: { fontSize: '0.75rem', color: '#a0aec0', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px', paddingLeft: '15px', letterSpacing: '0.5px' },
