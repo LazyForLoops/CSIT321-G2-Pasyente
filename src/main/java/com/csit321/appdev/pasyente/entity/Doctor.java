@@ -14,8 +14,6 @@ public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long doctorId;
- /*   @OneToMany
-    private List<Appointments> appointments;*/ 
   
     public void setDoctorId(Long doctorId){
         this.doctorId = doctorId;
@@ -24,10 +22,4 @@ public class Doctor {
         return doctorId;
     }
 
-    /*public void setAppointments(List<Appointments> appointments){
-        this.appointments = appointments;
-    }
-    public List<Appointments> getAppointments(){
-        return appointments;
-    }*/
 }
