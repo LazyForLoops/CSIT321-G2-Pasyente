@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.csit321.appdev.pasyente.entity.User;
 import com.csit321.appdev.pasyente.repository.UserRepository;
 
+// UserService.java
 @Service
 public class UserService {
 
@@ -14,17 +15,23 @@ public class UserService {
         this.userRepo = userRepo;
     }
 
-    // Register user
-    public User register(String name, String password) {
-        User existing = userRepo.findByName(name);
-        if (existing != null) return null; // user exists
-        User user = new User(name, password);
+    // Register user with email
+    public User register(String name, String email, String password) {
+        // Check if username or email already exists
+        if (userRepo.findByName(name) != null || userRepo.findByEmail(email) != null) {
+            return null; // user exists
+        }
+
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);    // save email
+        user.setPassword(password);
         return userRepo.save(user);
     }
 
-    // Login user
-    public User login(String name, String password) {
-        User user = userRepo.findByName(name);
+    // Login by email
+    public User loginByEmail(String email, String password) {
+        User user = userRepo.findByEmail(email);
         if (user != null && user.getPassword().equals(password)) {
             return user;
         }

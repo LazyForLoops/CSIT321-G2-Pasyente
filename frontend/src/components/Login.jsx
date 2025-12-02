@@ -190,20 +190,28 @@ function Login({ onLogin }) {
     }
 
     try {
-      // Send POST request to backend
       const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: email, password: password }) // backend expects 'name' and 'password'
+        body: JSON.stringify({ 
+          email: email,       // send email instead of name
+          password: password
+        })
       });
 
+      if (!response.ok) {
+        // 401 or other error
+        alert("Invalid credentials or server error");
+        return;
+      }
+
+      // Only parse JSON if response is OK
       const data = await response.json();
 
       if (data && data.name) {
-        // Successful login
-        onLogin(data.name);
+        onLogin(data.name); // successful login
       } else {
-        alert("Invalid credentials");
+        alert("Login failed");
       }
 
     } catch (error) {
@@ -211,6 +219,7 @@ function Login({ onLogin }) {
       alert("Error connecting to server");
     }
   };
+
 
   return (
     <div style={styles.container}>

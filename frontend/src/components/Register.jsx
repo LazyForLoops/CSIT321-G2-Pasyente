@@ -65,6 +65,7 @@ function Register({ onRegister, onSwitchToLogin }) {
       },
       body: JSON.stringify({
         name: fullName,
+        email: email,
         password: password
       })
     });

@@ -1,5 +1,6 @@
 package com.csit321.appdev.pasyente.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,15 +16,18 @@ public class User {
     private Long userId;
 
     private String name;
-
     private String password;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     // Constructors
     public User() {}
 
-    public User(String name, String password) {
+    public User(String name, String password, String email) {
         this.name = name;
         this.password = password;
+        this.email = email;
     }
 
     // Getters and Setters
@@ -36,8 +40,11 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
     // Login function (for demonstration)
-    public boolean login(String inputId, String inputPassword) {
+    public boolean login(String inputPassword) {
         if (this.password.equals(inputPassword)) {
             System.out.println("Login successful for " + this.name);
             return true;
