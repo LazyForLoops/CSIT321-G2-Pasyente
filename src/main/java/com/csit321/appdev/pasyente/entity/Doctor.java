@@ -1,23 +1,27 @@
 package com.csit321.appdev.pasyente.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import java.util.List;
+// import java.util.List;
 
 @Entity
 @Table(name = "DOCTOR")
 public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long doctor_id;
+    private Long doctorId;
  /*   @OneToMany
     private List<Appointments> appointments;*/ 
   
     public void setDoctorId(Long doctorId){
-        this.doctor_id = doctorId;
+        this.doctorId = doctorId;
     }
     public Long getDoctorId(){
-        return doctor_id;
+        return doctorId;
     }
 
     /*public void setAppointments(List<Appointments> appointments){
