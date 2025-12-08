@@ -1,322 +1,181 @@
-// import React, { useState } from 'react';
-
-// function Register({ onRegister, onSwitchToLogin }) {
-//   // --- Form State ---
-//   const [fullName, setFullName] = useState("");
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [confirmPassword, setConfirmPassword] = useState("");
-//   const [userRole, setUserRole] = useState("Patient"); // Default role
-
-//   // const handleSubmit = (e) => {
-//   //   e.preventDefault();
-    
-//   //   // Basic Validation
-//   //   if (!fullName || !email || !password || !confirmPassword) {
-//   //     alert("Please fill in all fields.");
-//   //     return;
-//   //   }
-//   //   if (password !== confirmPassword) {
-//   //     alert("Passwords do not match.");
-//   //     return;
-//   //   }
-//   //   if (password.length < 8) {
-//   //     alert("Password must be at least 8 characters long.");
-//   //     return;
-//   //   }
-
-//   //   // Simulate successful registration
-//   //   // In a real app, you would send this data to your backend here.
-//   //   console.log("Registering:", { fullName, email, password, userRole });
-//   //   onRegister(email);
-//   // };
-
-//   const handleSubmit = async (e) => {
-//   e.preventDefault();
-
-//   if (!fullName || !email || !password || !confirmPassword) {
-//     alert("Please fill in all fields.");
-//     return;
-//   }
-//   if (password !== confirmPassword) {
-//     alert("Passwords do not match.");
-//     return;
-//   }
-//   if (password.length < 8) {
-//     alert("Password must be at least 8 characters long.");
-//     return;
-//   }
-
-//   try {
-//     // const response = await fetch("http://localhost:8080/api/users/register", {
-//     //   method: "POST",
-//     //   headers: {
-//     //     "Content-Type": "application/json"
-//     //   },
-//     //   body: JSON.stringify({
-//     //     name: fullName,
-//     //     password: password
-//     //   })
-//     // });
-//     const response = await fetch("http://localhost:8080/api/auth/register", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json"
-//       },
-//       body: JSON.stringify({
-//         name: fullName,
-//         email: email,
-//         password: password
-//       })
-//     });
-
-//     if (!response.ok) {
-//       throw new Error("Failed to register");
-//     }
-
-//     const data = await response.json();
-//     console.log("Registered user:", data);
-
-//     // Automatically log in after registration
-//     onRegister(email);
-
-//   } catch (error) {
-//     console.error(error);
-//     alert("Registration failed. Please try again.");
-//   }
-// };
-
-
-//   return (
-//     <div style={styles.container}>
-//       <div style={styles.card}>
-//         {/* Header Section */}
-//         <div style={styles.header}>
-//           <div style={styles.logo}>
-//             <span style={styles.logoIcon}>✲</span> PASYENTE
-//           </div>
-//           <h2 style={styles.title}>Create Your PASYENTE Account</h2>
-//           <p style={styles.subtitle}>Begin your journey to better health management.</p>
-//         </div>
-
-//         <form onSubmit={handleSubmit} style={styles.form}>
-//           {/* Full Name Input */}
-//           <div style={styles.inputGroup}>
-//             <label style={styles.label}>Full Name</label>
-//             <input
-//               type="text"
-//               placeholder="John Doe"
-//               style={styles.input}
-//               value={fullName}
-//               onChange={(e) => setFullName(e.target.value)}
-//             />
-//           </div>
-
-//           {/* Email Address Input */}
-//           <div style={styles.inputGroup}>
-//             <label style={styles.label}>Email Address</label>
-//             <input
-//               type="email"
-//               placeholder="john.doe@example.com"
-//               style={styles.input}
-//               value={email}
-//               onChange={(e) => setEmail(e.target.value)}
-//             />
-//           </div>
-
-//           {/* Password Input */}
-//           <div style={styles.inputGroup}>
-//             <label style={styles.label}>Password</label>
-//             <input
-//               type="password"
-//               placeholder="••••••••"
-//               style={styles.input}
-//               value={password}
-//               onChange={(e) => setPassword(e.target.value)}
-//             />
-//             <p style={styles.helperText}>Password must be at least 8 characters long.</p>
-//           </div>
-
-//           {/* Confirm Password Input */}
-//           <div style={styles.inputGroup}>
-//             <label style={styles.label}>Confirm Password</label>
-//             <input
-//               type="password"
-//               placeholder="••••••••"
-//               style={styles.input}
-//               value={confirmPassword}
-//               onChange={(e) => setConfirmPassword(e.target.value)}
-//             />
-//           </div>
-
-//           {/* User Role Dropdown */}
-//           <div style={styles.inputGroup}>
-//             <label style={styles.label}>User Role</label>
-//             <select
-//               style={styles.select}
-//               value={userRole}
-//               onChange={(e) => setUserRole(e.target.value)}
-//             >
-//               <option value="Patient">Patient</option>
-//               <option value="Doctor">Doctor</option>
-//               <option value="Admin">Admin</option>
-//             </select>
-//           </div>
-
-//           <button type="submit" style={styles.button}>Register</button>
-//         </form>
-
-//         {/* Footer / Switch to Login */}
-//         <div style={styles.footer}>
-//           <p style={styles.loginText}>
-//             Already have an account?
-//             <span onClick={onSwitchToLogin} style={styles.loginLink}> Login</span>
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import React, { useState } from 'react';
 
 function Register({ onRegister, onSwitchToLogin }) {
-    const [fullName, setFullName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [userRole, setUserRole] = useState("Patient"); // Default role
+  // --- Form State ---
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [userRole, setUserRole] = useState("Patient"); // Default role
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+    
+  //   // Basic Validation
+  //   if (!fullName || !email || !password || !confirmPassword) {
+  //     alert("Please fill in all fields.");
+  //     return;
+  //   }
+  //   if (password !== confirmPassword) {
+  //     alert("Passwords do not match.");
+  //     return;
+  //   }
+  //   if (password.length < 8) {
+  //     alert("Password must be at least 8 characters long.");
+  //     return;
+  //   }
 
-        // Basic validation
-        if (!fullName || !email || !password || !confirmPassword) {
-            alert("Please fill in all fields.");
-            return;
-        }
-        if (password !== confirmPassword) {
-            alert("Passwords do not match.");
-            return;
-        }
-        if (password.length < 8) {
-            alert("Password must be at least 8 characters long.");
-            return;
-        }
+  //   // Simulate successful registration
+  //   // In a real app, you would send this data to your backend here.
+  //   console.log("Registering:", { fullName, email, password, userRole });
+  //   onRegister(email);
+  // };
 
-        try {
-            const response = await fetch("http://localhost:8080/api/auth/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    name: fullName,
-                    email: email,
-                    password: password,
-                    role: userRole // Send selected role
-                })
-            });
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || "Registration failed");
-            }
+  if (!fullName || !email || !password || !confirmPassword) {
+    alert("Please fill in all fields.");
+    return;
+  }
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+  if (password.length < 8) {
+    alert("Password must be at least 8 characters long.");
+    return;
+  }
 
-            const data = await response.json();
-            console.log("Registered user:", data);
+  try {
+    // const response = await fetch("http://localhost:8080/api/users/register", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   },
+    //   body: JSON.stringify({
+    //     name: fullName,
+    //     password: password
+    //   })
+    // });
+    const response = await fetch("http://localhost:8080/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: fullName,
+        email: email,
+        password: password
+      })
+    });
 
-            // Automatically log in after registration
-            onRegister(email);
+    if (!response.ok) {
+      throw new Error("Failed to register");
+    }
 
-        } catch (error) {
-            console.error(error);
-            alert("Registration failed: " + error.message);
-        }
-    };
+    const data = await response.json();
+    console.log("Registered user:", data);
 
-    return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <div style={styles.header}>
-                    <div style={styles.logo}>
-                        <span style={styles.logoIcon}>✲</span> PASYENTE
-                    </div>
-                    <h2 style={styles.title}>Create Your PASYENTE Account</h2>
-                    <p style={styles.subtitle}>Begin your journey to better health management.</p>
-                </div>
+    // Automatically log in after registration
+    onRegister(email);
 
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Full Name</label>
-                        <input
-                            type="text"
-                            placeholder="John Doe"
-                            style={styles.input}
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                        />
-                    </div>
+  } catch (error) {
+    console.error(error);
+    alert("Registration failed. Please try again.");
+  }
+};
 
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Email Address</label>
-                        <input
-                            type="email"
-                            placeholder="john.doe@example.com"
-                            style={styles.input}
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
 
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Password</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            style={styles.input}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <p style={styles.helperText}>Password must be at least 8 characters long.</p>
-                    </div>
-
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Confirm Password</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            style={styles.input}
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                    </div>
-
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>User Role</label>
-                        <select
-                            style={styles.select}
-                            value={userRole}
-                            onChange={(e) => setUserRole(e.target.value)}
-                        >
-                            <option value="Patient">Patient</option>
-                            <option value="Doctor">Doctor</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" style={styles.button}>Register</button>
-                </form>
-
-                <div style={styles.footer}>
-                    <p style={styles.loginText}>
-                        Already have an account?
-                        <span onClick={onSwitchToLogin} style={styles.loginLink}> Login</span>
-                    </p>
-                </div>
-            </div>
+  return (
+    <div style={styles.container}>
+      <div style={styles.card}>
+        {/* Header Section */}
+        <div style={styles.header}>
+          <div style={styles.logo}>
+            <span style={styles.logoIcon}>✲</span> PASYENTE
+          </div>
+          <h2 style={styles.title}>Create Your PASYENTE Account</h2>
+          <p style={styles.subtitle}>Begin your journey to better health management.</p>
         </div>
-    );
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {/* Full Name Input */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Full Name</label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              style={styles.input}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
+
+          {/* Email Address Input */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Email Address</label>
+            <input
+              type="email"
+              placeholder="john.doe@example.com"
+              style={styles.input}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          {/* Password Input */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style={styles.input}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <p style={styles.helperText}>Password must be at least 8 characters long.</p>
+          </div>
+
+          {/* Confirm Password Input */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Confirm Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              style={styles.input}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+
+          {/* User Role Dropdown */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>User Role</label>
+            <select
+              style={styles.select}
+              value={userRole}
+              onChange={(e) => setUserRole(e.target.value)}
+            >
+              <option value="Patient">Patient</option>
+              <option value="Doctor">Doctor</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+
+          <button type="submit" style={styles.button}>Register</button>
+        </form>
+
+        {/* Footer / Switch to Login */}
+        <div style={styles.footer}>
+          <p style={styles.loginText}>
+            Already have an account?
+            <span onClick={onSwitchToLogin} style={styles.loginLink}> Login</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const styles = {

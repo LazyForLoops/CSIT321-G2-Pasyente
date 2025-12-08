@@ -21,14 +21,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    // @PostMapping("/register")
-    // public ResponseEntity<User> registerUser(@RequestBody User user) {
-    //     User savedUser = userService.register(user.getName(), user.getEmail(), user.getPassword());
-    //     if (savedUser == null) {
-    //         return ResponseEntity.status(409).build(); // Conflict if user/email exists
-    //     }
-    //     return ResponseEntity.ok(savedUser);
-    // }
+    @PostMapping("/register")
+    public ResponseEntity<User> registerUser(@RequestBody User user) {
+        User savedUser = userService.register(user.getName(), user.getEmail(), user.getPassword());
+        if (savedUser == null) {
+            return ResponseEntity.status(409).build(); // Conflict if user/email exists
+        }
+        return ResponseEntity.ok(savedUser);
+    }
 
 
     @PostMapping("/login")

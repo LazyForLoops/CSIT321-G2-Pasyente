@@ -5,8 +5,7 @@ import org.springframework.stereotype.Service;
 import com.csit321.appdev.pasyente.entity.User;
 import com.csit321.appdev.pasyente.repository.UserRepository;
 
-import java.util.Optional;
-
+// UserService.java
 @Service
 public class UserService {
 
@@ -19,27 +18,22 @@ public class UserService {
     // Register user with email
     public User register(String name, String email, String password) {
         // Check if username or email already exists
-        Optional<User> existingByName = userRepo.findByName(name);
-        Optional<User> existingByEmail = userRepo.findByEmail(email);
-        if (existingByName.isPresent() || existingByEmail.isPresent()) {
+        if (userRepo.findByName(name) != null || userRepo.findByEmail(email) != null) {
             return null; // user exists
         }
 
         User user = new User();
         user.setName(name);
-        user.setEmail(email);
+        user.setEmail(email);    // save email
         user.setPassword(password);
         return userRepo.save(user);
     }
 
     // Login by email
     public User loginByEmail(String email, String password) {
-        Optional<User> optionalUser = userRepo.findByEmail(email);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if (user.getPassword().equals(password)) {
-                return user;
-            }
+        User user = userRepo.findByEmail(email);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
         }
         return null;
     }
