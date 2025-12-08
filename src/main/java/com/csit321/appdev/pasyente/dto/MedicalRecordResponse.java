@@ -14,11 +14,9 @@ public class MedicalRecordResponse {
         this.recordID = record.getRecordID();
         this.description = record.getDescription();
         this.doctorID = record.getDoctor() != null ? record.getDoctor().getDoctorId() : null;
-        this.doctorName = record.getDoctor() != null && record.getDoctor().getUser() != null
-                          ? record.getDoctor().getUser().getName() : null;
+        this.doctorName = record.getDoctor() != null ? record.getDoctor().getUser().getName() : null;
         this.patientID = record.getPatient() != null ? record.getPatient().getPatientId() : null;
-        this.patientName = record.getPatient() != null && record.getPatient().getUser() != null
-                           ? record.getPatient().getUser().getName() : null;
+        this.patientName = record.getPatient() != null ? record.getPatient().getUser().getName() : null;
     }
 
     // Getters only

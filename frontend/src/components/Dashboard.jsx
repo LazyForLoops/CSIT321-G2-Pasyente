@@ -51,12 +51,13 @@
 //     </div>
 //   );
 // }
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 function Dashboard({ userName }) {
     const [records, setRecords] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState(null);
 
     useEffect(() => {
         fetchRecords();
@@ -68,17 +69,25 @@ function Dashboard({ userName }) {
             .catch(err => console.error('Error fetching medical records:', err));
     };
 
+    const handleViewRecord = (record) => {
+        setSelectedRecord(record);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedRecord(null);
+        setShowModal(false);
+    };
+
     return (
         <div style={styles.container}>
             <h1 style={styles.welcome}>Welcome back, {userName || "Patient"}!</h1>
             <p style={styles.subtitle}>Here's a quick overview of your health status.</p>
 
             <div style={styles.grid}>
-                {/* Recent Health Records */}
                 <div style={styles.card}>
                     <div style={styles.cardHeader}>
                         <h3 style={styles.cardTitle}>Recent Health Records</h3>
-                        <span style={styles.cardAction}>View All</span>
                     </div>
                     <div style={styles.list}>
                         {records.length > 0 ? records.map(rec => (
@@ -87,16 +96,21 @@ function Dashboard({ userName }) {
                                 title={rec.description}
                                 subtitle={`Doctor: ${rec.doctorName || "N/A"} | Patient: ${rec.patientName || "N/A"}`}
                                 icon="📄"
+                                onView={() => handleViewRecord(rec)}
                             />
                         )) : <p>No health records available.</p>}
                     </div>
                 </div>
             </div>
+
+            {showModal && selectedRecord && (
+                <Modal record={selectedRecord} onClose={handleCloseModal} />
+            )}
         </div>
     );
 }
 
-function ListItem({ title, subtitle, icon }) {
+function ListItem({ title, subtitle, icon, onView }) {
     return (
         <div style={styles.item}>
             <div style={styles.iconBox}>{icon}</div>
@@ -104,11 +118,27 @@ function ListItem({ title, subtitle, icon }) {
                 <div style={styles.itemTitle}>{title}</div>
                 {subtitle && <div style={styles.itemDate}>{subtitle}</div>}
             </div>
-            <button style={styles.viewBtn}>View</button>
+            <button style={styles.viewBtn} onClick={onView}>View</button>
         </div>
     );
 }
 
+function Modal({ record, onClose }) {
+    return (
+        <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+                <h2>Medical Record Details</h2>
+                <p><strong>Record ID:</strong> {record.recordID}</p>
+                <p><strong>Description:</strong> {record.description}</p>
+                <p><strong>Doctor ID:</strong> {record.doctorID}</p>
+                <p><strong>Doctor Name:</strong> {record.doctorName}</p>
+                <p><strong>Patient ID:</strong> {record.patientID}</p>
+                <p><strong>Patient Name:</strong> {record.patientName}</p>
+                <button onClick={onClose} style={styles.primaryBtn}>Close</button>
+            </div>
+        </div>
+    );
+}
 
 const styles = {
   container: { 
@@ -138,7 +168,11 @@ const styles = {
   itemContent: { flex: 1 },
   itemTitle: { fontWeight: '600', color: '#2d3748', fontSize: '0.95rem' },
   itemDate: { color: '#718096', fontSize: '0.85rem', marginTop: '4px' },
-  viewBtn: { color: '#5865F2', background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer' }
+  viewBtn: { color: '#5865F2', background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer' },
+  modalOverlay: { position: 'fixed', top:0, left:0, right:0, bottom:0, backgroundColor:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex: 1000 },
+  modal: { backgroundColor:'white', padding:'30px', borderRadius:'12px', width:'400px', maxWidth:'90%' },
+  primaryBtn: { padding:'10px 20px', backgroundColor:'#5865F2', color:'white', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }
+
 };
 
 export default Dashboard;
