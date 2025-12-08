@@ -128,19 +128,39 @@ import Medications from './components/Medications';
 import Profile from './components/Profile';
 
 function App() {
-  const [user, setUser] = useState(() => localStorage.getItem('pasyente_user'));
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem('pasyente_user');
+    try {
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  });
 
-  const handleLogin = (email) => {
-    const name = email.split('@')[0];
-    const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+  const saveUser = (userData) => {
+    localStorage.setItem('pasyente_user', JSON.stringify(userData));
+    setUser(userData);
+  };
 
-    localStorage.setItem('pasyente_user', formattedName);
-    setUser(formattedName);
+  const handleLogin = (userData) => {
+    if (!userData) return;
+    const formatted = {
+      name: userData.name || userData.email?.split('@')[0],
+      email: userData.email,
+      userId: userData.userId || userData.id,
+    };
+    saveUser(formatted);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('pasyente_user');
     setUser(null);
+  };
+
+  const handleProfileUpdate = (updated) => {
+    if (!updated) return;
+    const merged = { ...user, ...updated };
+    saveUser(merged);
   };
 
   return (
@@ -168,17 +188,17 @@ function App() {
             element={
               <div style={styles.layout}>
                 <TopNavbar user={user} onLogout={handleLogout} />
-                <Sidebar />
+                <Sidebar onLogout={handleLogout} />
 
                 <main style={styles.mainContent}>
                   <div style={styles.scrollableArea}>
                     <Routes>
-                      <Route path="/" element={<Dashboard userName={user} />} />
-                      <Route path="/records" element={<HealthRecords />} />
-                      <Route path="/appointments" element={<Appointments />} />
-                      <Route path="/medications" element={<Medications />} />
+                      <Route path="/" element={<Dashboard userName={user?.name} />} />
+                      <Route path="/records" element={<HealthRecords userEmail={user?.email} />} />
+                      <Route path="/appointments" element={<Appointments userEmail={user?.email} />} />
+                      <Route path="/medications" element={<Medications userEmail={user?.email} />} />
                       <Route path="/settings" element={<Settings />} />
-                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/profile" element={<Profile user={user} onProfileUpdate={handleProfileUpdate} />} />
 
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
@@ -210,7 +230,7 @@ const styles = {
   },
   mainContent: {
     marginLeft: '240px',
-    paddingTop: '100px',
+    paddingTop: '90px',
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column'

@@ -1,25 +1,63 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-function Medications() {
-  // Mock data based on the reference image
-  const medications = [
-    { name: "Lisinopril", dose: "10 mg", schedule: "Once daily, in the morning" },
-    { name: "Metformin", dose: "500 mg", schedule: "Twice daily, with meals" },
-    { name: "Atorvastatin", dose: "20 mg", schedule: "Once daily, at bedtime" },
-    { name: "Amoxicillin", dose: "250 mg", schedule: "Three times daily, with food for 7 days" },
-    { name: "Omeprazole", dose: "20 mg", schedule: "Once daily, 30 mins before breakfast" },
-    { name: "Ibuprofen", dose: "400 mg", schedule: "Every 4-6 hours as needed for pain" },
-  ];
+function Medications({ userEmail }) {
+  const [medications, setMedications] = useState([]);
+  const [form, setForm] = useState({ name: '', dose: '', schedule: '' });
+
+  const load = async () => {
+    if (!userEmail) return;
+    try {
+      const res = await fetch(`http://localhost:8080/api/medications?userEmail=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      setMedications(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error('Failed to load medications', e);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, [userEmail]);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!form.name) {
+      alert('Medication name required.');
+      return;
+    }
+    try {
+      const res = await fetch('http://localhost:8080/api/medications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, userEmail })
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setForm({ name: '', dose: '', schedule: '' });
+      load();
+    } catch (e) {
+      console.error(e);
+      alert('Could not save medication.');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    await fetch(`http://localhost:8080/api/medications/${id}`, { method: 'DELETE' });
+    load();
+  };
 
   return (
     <div style={styles.container}>
-      {/* Header Section */}
       <div style={styles.header}>
         <h1 style={styles.pageTitle}>Medication Management</h1>
-        <button style={styles.primaryBtn}>+ Add New Medication</button>
       </div>
 
-      {/* Content Card */}
+      <form style={styles.form} onSubmit={handleCreate}>
+        <input style={styles.input} placeholder="Medication name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})}/>
+        <input style={styles.input} placeholder="Dose (e.g. 10 mg)" value={form.dose} onChange={(e)=>setForm({...form,dose:e.target.value})}/>
+        <input style={styles.input} placeholder="Schedule" value={form.schedule} onChange={(e)=>setForm({...form,schedule:e.target.value})}/>
+        <button style={styles.primaryBtn} type="submit">+ Add New Medication</button>
+      </form>
+
       <div style={styles.card}>
         <div style={styles.cardHeader}>
           <h3 style={styles.cardTitle}>Current Medications</h3>
@@ -37,9 +75,10 @@ function Medications() {
               </tr>
             </thead>
             <tbody>
-              {medications.map((med, index) => (
-                <TableRow key={index} data={med} />
+              {medications.map((med) => (
+                <TableRow key={med.id} data={med} onDelete={() => handleDelete(med.id)} />
               ))}
+              {medications.length === 0 && <tr><td style={styles.td} colSpan={4}>No medications saved.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -48,11 +87,10 @@ function Medications() {
   );
 }
 
-function TableRow({ data }) {
+function TableRow({ data, onDelete }) {
   return (
     <tr style={styles.row}>
       <td style={styles.td}>
-        {/* Added the Pill Icon here */}
         <div style={styles.nameWrapper}>
           <span style={styles.pillIcon}>💊</span>
           <span style={{fontWeight: '700', color: '#2d3748'}}>{data.name}</span>
@@ -62,15 +100,7 @@ function TableRow({ data }) {
       <td style={styles.td}>{data.schedule}</td>
       <td style={{...styles.td, textAlign: 'right'}}>
         <div style={styles.actions}>
-          {/* Edit Button (Pencil) */}
-          <button style={styles.iconBtn} title="Edit">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5865F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-          </button>
-          {/* Delete Button (Trash) */}
-          <button style={styles.deleteBtn} title="Delete">
+          <button style={styles.deleteBtn} title="Delete" onClick={onDelete}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -132,6 +162,8 @@ const styles = {
     color: '#718096', 
     margin: 0 
   },
+  form: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: '10px', background: '#fff', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '24px' },
+  input: { padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.95rem' },
   tableWrapper: { overflowX: 'auto' },
   table: { 
     width: '100%', 

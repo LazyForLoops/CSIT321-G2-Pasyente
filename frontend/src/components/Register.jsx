@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-function Register({ onRegister, onSwitchToLogin }) {
+function Register({ onRegister }) {
   // --- Form State ---
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userRole, setUserRole] = useState("Patient"); // Default role
+  const navigate = useNavigate();
 
   // const handleSubmit = (e) => {
   //   e.preventDefault();
@@ -75,10 +77,10 @@ function Register({ onRegister, onSwitchToLogin }) {
     }
 
     const data = await response.json();
-    console.log("Registered user:", data);
 
     // Automatically log in after registration
-    onRegister(email);
+    onRegister(data);
+    navigate("/");
 
   } catch (error) {
     console.error(error);
@@ -170,7 +172,7 @@ function Register({ onRegister, onSwitchToLogin }) {
         <div style={styles.footer}>
           <p style={styles.loginText}>
             Already have an account?
-            <span onClick={onSwitchToLogin} style={styles.loginLink}> Login</span>
+            <Link to="/login" style={styles.loginLink}> Login</Link>
           </p>
         </div>
       </div>

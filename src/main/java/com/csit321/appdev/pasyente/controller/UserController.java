@@ -27,6 +27,7 @@ public class UserController {
         if (savedUser == null) {
             return ResponseEntity.status(409).build(); // Conflict if user/email exists
         }
+        savedUser.setPassword(null);
         return ResponseEntity.ok(savedUser);
     }
 
@@ -37,6 +38,7 @@ public class UserController {
         if (loggedInUser == null) {
             return ResponseEntity.status(401).build(); // Unauthorized
         }
+        loggedInUser.setPassword(null);
         return ResponseEntity.ok(loggedInUser);
     }
 

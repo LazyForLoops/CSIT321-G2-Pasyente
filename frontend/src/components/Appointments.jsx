@@ -1,19 +1,91 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-function Appointments() {
-  // State to toggle between 'calendar' and 'list' views
-  const [view, setView] = useState('calendar'); 
+function Appointments({ userEmail }) {
+  const [view, setView] = useState('calendar');
+  const [appointments, setAppointments] = useState([]);
+  const [form, setForm] = useState({
+    title: '',
+    date: '',
+    time: '',
+    doctorName: '',
+    status: 'Confirmed',
+    description: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const loadAppointments = async () => {
+    if (!userEmail) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:8080/api/appointments?userEmail=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      setAppointments(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load appointments', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAppointments();
+  }, [userEmail]);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!userEmail || !form.title || !form.date || !form.time) {
+      alert('Please fill title, date and time.');
+      return;
+    }
+    const appointmentDateTime = new Date(`${form.date}T${form.time}`);
+    try {
+      const res = await fetch('http://localhost:8080/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title,
+          doctorName: form.doctorName,
+          status: form.status,
+          description: form.description,
+          appointmentDateTime,
+          userEmail
+        })
+      });
+      if (!res.ok) {
+        throw new Error('Unable to save appointment');
+      }
+      setForm({ title: '', date: '', time: '', doctorName: '', status: 'Confirmed', description: '' });
+      loadAppointments();
+    } catch (err) {
+      console.error(err);
+      alert('Could not save appointment.');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!id) return;
+    await fetch(`http://localhost:8080/api/appointments/${id}`, { method: 'DELETE' });
+    loadAppointments();
+  };
+
+  const upcoming = useMemo(() => appointments.filter(a => !a.status || a.status !== 'Completed'), [appointments]);
+  const past = useMemo(() => appointments.filter(a => a.status === 'Completed'), [appointments]);
+
+  const formatDateParts = (iso) => {
+    const d = iso ? new Date(iso) : new Date();
+    return {
+      day: d.getDate().toString().padStart(2, '0'),
+      month: d.toLocaleString('default', { month: 'short' }).toUpperCase(),
+      time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+  };
 
   return (
     <div style={styles.container}>
-      {/* Header Section with Toggle */}
       <div style={styles.header}>
         <h1 style={styles.pageTitle}>Appointments</h1>
-        
         <div style={styles.headerActions}>
-          <button style={styles.primaryBtn}>+ Book New Appointment</button>
-          
-          {/* View Toggle Buttons */}
+          <button style={styles.primaryBtn} onClick={() => setView('list')}>Manage Appointments</button>
           <div style={styles.toggleGroup}>
             <button 
               style={view === 'calendar' ? styles.toggleBtnActive : styles.toggleBtn}
@@ -25,92 +97,97 @@ function Appointments() {
               style={view === 'list' ? styles.toggleBtnActive : styles.toggleBtn}
               onClick={() => setView('list')}
             >
-              <span style={{marginRight: '5px'}}>dX</span> List
+              <span style={{marginRight: '5px'}}>📋</span> List
             </button>
           </div>
         </div>
       </div>
 
-      {/* CONDITIONAL RENDERING */}
-      
-      {/* 1. CALENDAR VIEW (New Implementation) */}
+      {/* Quick Add Form */}
+      <form style={styles.form} onSubmit={handleCreate}>
+        <input style={styles.input} placeholder="Title" value={form.title} onChange={(e)=>setForm({...form,title:e.target.value})}/>
+        <input style={styles.input} type="date" value={form.date} onChange={(e)=>setForm({...form,date:e.target.value})}/>
+        <input style={styles.input} type="time" value={form.time} onChange={(e)=>setForm({...form,time:e.target.value})}/>
+        <input style={styles.input} placeholder="Doctor" value={form.doctorName} onChange={(e)=>setForm({...form,doctorName:e.target.value})}/>
+        <select style={styles.select} value={form.status} onChange={(e)=>setForm({...form,status:e.target.value})}>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+        </select>
+        <input style={styles.input} placeholder="Notes (optional)" value={form.description} onChange={(e)=>setForm({...form,description:e.target.value})}/>
+        <button style={styles.primaryBtn} type="submit" disabled={loading}>Save</button>
+      </form>
+
       {view === 'calendar' && (
         <div style={styles.calendarWrapper}>
-          {/* Month Navigator */}
           <div style={styles.monthNav}>
-            <button style={styles.navBtn}>‹</button>
-            <span style={styles.monthLabel}>September 2025</span>
-            <button style={styles.navBtn}>›</button>
+            <span style={styles.monthLabel}>Upcoming dates</span>
           </div>
-
-          {/* Calendar Grid */}
           <div style={styles.calendarCard}>
-            {/* Weekday Headers */}
-            <div style={styles.weekDaysHeader}>
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} style={styles.weekDay}>{day}</div>
-              ))}
-            </div>
-
-            {/* Days Grid */}
-            <div style={styles.daysGrid}>
-              {/* Empty slots for previous month (Sept 1st is Monday) */}
-              <div style={styles.dayCellEmpty}>31</div> 
-              
-              {/* Render days 1 to 30 */}
-              {[...Array(30)].map((_, i) => {
-                const dayNum = i + 1;
-                const isSelected = dayNum === 30; // Highlight 30th like in the image
-                return (
-                  <div key={dayNum} style={isSelected ? styles.dayCellSelected : styles.dayCell}>
-                    <span style={styles.dayNumber}>{dayNum}</span>
+            {upcoming.length === 0 && <div style={{padding:'20px', color:'#718096'}}>No upcoming appointments yet.</div>}
+            {upcoming.map((a) => {
+              const parts = formatDateParts(a.appointmentDateTime);
+              return (
+                <div key={a.appointmentID} style={{...styles.item, borderBottom:'1px solid #f0f2f5'}}>
+                  <div style={styles.dateBox}>
+                    <span style={{fontSize: '1.1rem', fontWeight: 'bold'}}>{parts.day}</span>
+                    <span style={{fontSize: '0.75rem', textTransform: 'uppercase'}}>{parts.month}</span>
                   </div>
-                );
-              })}
-              
-              {/* Empty slots for next month */}
-              <div style={styles.dayCellEmpty}>1</div>
-              <div style={styles.dayCellEmpty}>2</div>
-              <div style={styles.dayCellEmpty}>3</div>
-              <div style={styles.dayCellEmpty}>4</div>
-            </div>
+                  <div style={styles.content}>
+                    <div style={styles.title}>{a.title}</div>
+                    <div style={styles.details}>{parts.time} • {a.doctorName || 'TBD'}</div>
+                  </div>
+                  <span style={{...styles.statusBadge, backgroundColor: a.status === 'Confirmed' ? '#def7ec' : a.status === 'Completed' ? '#f3f4f6' : '#feecdc', color: a.status === 'Confirmed' ? '#03543f' : a.status === 'Completed' ? '#6b7280' : '#9c4221'}}>
+                    {a.status || 'Pending'}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* 2. LIST VIEW (Your Original Code) */}
       {view === 'list' && (
         <div style={styles.listWrapper}>
-          {/* Upcoming Section */}
           <h3 style={styles.sectionTitle}>Upcoming</h3>
           <div style={styles.listCard}>
-            <AppointmentItem 
-              day="26" month="OCT" 
-              title="Dental Check-up" 
-              time="10:00 AM - 11:00 AM" 
-              doctor="Dr. Anagna (Dentist)" 
-              status="Confirmed"
-            />
-            <AppointmentItem 
-              day="03" month="NOV" 
-              title="Cardiology Follow-up" 
-              time="02:30 PM - 03:00 PM" 
-              doctor="Dr. Cruz (Cardiologist)" 
-              status="Pending"
-            />
+            {upcoming.length === 0 && <div style={{padding:'12px', color:'#718096'}}>No upcoming items.</div>}
+            {upcoming.map((a) => {
+              const parts = formatDateParts(a.appointmentDateTime);
+              return (
+                <AppointmentItem 
+                  key={a.appointmentID}
+                  day={parts.day}
+                  month={parts.month}
+                  title={a.title}
+                  time={parts.time}
+                  doctor={a.doctorName}
+                  status={a.status}
+                  onDelete={() => handleDelete(a.appointmentID)}
+                />
+              );
+            })}
           </div>
 
-          {/* Past Section */}
           <h3 style={styles.sectionTitle}>Past Visits</h3>
           <div style={styles.listCard}>
-            <AppointmentItem 
-              day="15" month="SEP" 
-              title="General Consultation" 
-              time="09:00 AM" 
-              doctor="Dr. Santos" 
-              status="Completed"
-              isPast={true}
-            />
+            {past.length === 0 && <div style={{padding:'12px', color:'#718096'}}>No past items.</div>}
+            {past.map((a) => {
+              const parts = formatDateParts(a.appointmentDateTime);
+              return (
+                <AppointmentItem 
+                  key={a.appointmentID}
+                  day={parts.day}
+                  month={parts.month}
+                  title={a.title}
+                  time={parts.time}
+                  doctor={a.doctorName}
+                  status={a.status}
+                  isPast
+                  onDelete={() => handleDelete(a.appointmentID)}
+                />
+              );
+            })}
           </div>
         </div>
       )}
@@ -118,8 +195,7 @@ function Appointments() {
   );
 }
 
-// Your original Item Component
-function AppointmentItem({ day, month, title, time, doctor, status, isPast }) {
+function AppointmentItem({ day, month, title, time, doctor, status, isPast, onDelete }) {
   return (
     <div style={styles.item}>
       <div style={isPast ? styles.dateBoxPast : styles.dateBox}>
@@ -128,11 +204,12 @@ function AppointmentItem({ day, month, title, time, doctor, status, isPast }) {
       </div>
       <div style={styles.content}>
         <div style={styles.title}>{title}</div>
-        <div style={styles.details}>{time} • {doctor}</div>
+        <div style={styles.details}>{time} • {doctor || 'TBD'}</div>
       </div>
       <span style={{...styles.statusBadge, backgroundColor: status === 'Confirmed' ? '#def7ec' : status === 'Completed' ? '#f3f4f6' : '#feecdc', color: status === 'Confirmed' ? '#03543f' : status === 'Completed' ? '#6b7280' : '#9c4221'}}>
         {status}
       </span>
+      <button onClick={onDelete} style={{marginLeft:'12px', background:'none', border:'none', color:'#e53e3e', cursor:'pointer'}}>Delete</button>
     </div>
   );
 }
@@ -222,7 +299,12 @@ const styles = {
   content: { flex: 1 },
   title: { fontWeight: '700', color: '#2d3748', fontSize: '1rem', marginBottom: '4px' },
   details: { color: '#718096', fontSize: '0.9rem' },
-  statusBadge: { padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600' }
+  statusBadge: { padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600' },
+
+  // Form
+  form: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', background: '#fff', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '24px' },
+  input: { padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.95rem' },
+  select: { padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.95rem', background: '#fff' }
 };
 
 export default Appointments;
