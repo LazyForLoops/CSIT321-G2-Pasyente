@@ -39,25 +39,13 @@ public class AuthService {
         user = userRepository.save(user);
 
         // Create corresponding patient or doctor
-        // if ("Patient".equalsIgnoreCase(role)) {
-        //     Patient patient = new Patient();
-        //     patientRepository.save(patient);
-        // } else if ("Doctor".equalsIgnoreCase(role)) {
-        //     Doctor doctor = new Doctor();
-        //     doctorRepository.save(doctor);
-        // }
-
         if ("Patient".equalsIgnoreCase(role)) {
             Patient patient = new Patient();
-            patient.setUser(user);
             patientRepository.save(patient);
         } else if ("Doctor".equalsIgnoreCase(role)) {
             Doctor doctor = new Doctor();
-            doctor.setUser(user);
             doctorRepository.save(doctor);
         }
-
-
 
         return user;
     }

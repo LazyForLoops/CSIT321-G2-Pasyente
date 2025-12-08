@@ -335,10 +335,10 @@ function HealthRecords() {
                         <tbody>
                             {records.map((record) => (
                                 <tr key={record.recordid} style={styles.row}>
-                                    <td style={styles.td}>{record.recordID}</td>
+                                    <td style={styles.td}>{record.recordid}</td>
                                     <td style={styles.td}>{record.description}</td>
-                                    <td style={styles.td}>{record.doctorID}</td>
-                                    <td style={styles.td}>{record.patientID}</td>
+                                    <td style={styles.td}>{record.doctor_id}</td>
+                                    <td style={styles.td}>{record.patient_id}</td>
                                 </tr>
                             ))}
                         </tbody>
