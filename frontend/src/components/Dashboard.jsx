@@ -1,56 +1,114 @@
-import React from 'react';
+// import React from 'react';
+
+// function Dashboard({ userName }) {
+//   return (
+//     <div style={styles.container}>
+//       <h1 style={styles.welcome}>Welcome back, {userName || "Patient"}!</h1>
+//       <p style={styles.subtitle}>Here's a quick overview of your health status.</p>
+
+//       <div style={styles.grid}>
+//         {/* Card 1: Upcoming Appointments */}
+//         <div style={styles.card}>
+//           <div style={styles.cardHeader}>
+//              <h3 style={styles.cardTitle}>Upcoming Appointments</h3>
+//              <span style={styles.cardAction}>View All</span>
+//           </div>
+          
+//           <div style={styles.list}>
+//             <ListItem title="Dental Check-up" date="Oct 26, 2025 at 10:00 AM" icon="🦷" />
+//             <ListItem title="Cardiology Follow-up" date="Nov 03, 2025 at 02:30 PM" icon="❤️" />
+//             <ListItem title="Physical Therapy" date="Nov 15, 2025 at 09:00 AM" icon="💪" />
+//           </div>
+//         </div>
+
+//         {/* Card 2: Recent Health Records */}
+//         <div style={styles.card}>
+//           <div style={styles.cardHeader}>
+//              <h3 style={styles.cardTitle}>Recent Health Records</h3>
+//              <span style={styles.cardAction}>View All</span>
+//           </div>
+          
+//           <div style={styles.list}>
+//             <ListItem title="Annual Physical Exam" date="Oct 20, 2025" icon="📄" />
+//             <ListItem title="Blood Test Results" date="Oct 18, 2025" icon="🩸" />
+//             <ListItem title="Vaccination Record" date="Sep 05, 2025" icon="💉" />
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function ListItem({ title, date, icon }) {
+//   return (
+//     <div style={styles.item}>
+//       <div style={styles.iconBox}>{icon}</div>
+//       <div style={styles.itemContent}>
+//         <div style={styles.itemTitle}>{title}</div>
+//         <div style={styles.itemDate}>{date}</div>
+//       </div>
+//       <button style={styles.viewBtn}>View</button>
+//     </div>
+//   );
+// }
+
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function Dashboard({ userName }) {
-  return (
-    <div style={styles.container}>
-      <h1 style={styles.welcome}>Welcome back, {userName || "Patient"}!</h1>
-      <p style={styles.subtitle}>Here's a quick overview of your health status.</p>
+    const [records, setRecords] = useState([]);
 
-      <div style={styles.grid}>
-        {/* Card 1: Upcoming Appointments */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-             <h3 style={styles.cardTitle}>Upcoming Appointments</h3>
-             <span style={styles.cardAction}>View All</span>
-          </div>
-          
-          <div style={styles.list}>
-            <ListItem title="Dental Check-up" date="Oct 26, 2025 at 10:00 AM" icon="🦷" />
-            <ListItem title="Cardiology Follow-up" date="Nov 03, 2025 at 02:30 PM" icon="❤️" />
-            <ListItem title="Physical Therapy" date="Nov 15, 2025 at 09:00 AM" icon="💪" />
-          </div>
-        </div>
+    useEffect(() => {
+        fetchRecords();
+    }, []);
 
-        {/* Card 2: Recent Health Records */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-             <h3 style={styles.cardTitle}>Recent Health Records</h3>
-             <span style={styles.cardAction}>View All</span>
-          </div>
-          
-          <div style={styles.list}>
-            <ListItem title="Annual Physical Exam" date="Oct 20, 2025" icon="📄" />
-            <ListItem title="Blood Test Results" date="Oct 18, 2025" icon="🩸" />
-            <ListItem title="Vaccination Record" date="Sep 05, 2025" icon="💉" />
-          </div>
+    const fetchRecords = () => {
+        axios.get('http://localhost:8080/api/medical-records')
+            .then(res => setRecords(res.data))
+            .catch(err => console.error('Error fetching medical records:', err));
+    };
+
+    return (
+        <div style={styles.container}>
+            <h1 style={styles.welcome}>Welcome back, {userName || "Patient"}!</h1>
+            <p style={styles.subtitle}>Here's a quick overview of your health status.</p>
+
+            <div style={styles.grid}>
+                {/* Recent Health Records */}
+                <div style={styles.card}>
+                    <div style={styles.cardHeader}>
+                        <h3 style={styles.cardTitle}>Recent Health Records</h3>
+                        <span style={styles.cardAction}>View All</span>
+                    </div>
+                    <div style={styles.list}>
+                        {records.length > 0 ? records.map(rec => (
+                            <ListItem 
+                                key={rec.recordID}
+                                title={rec.description}
+                                subtitle={`Doctor: ${rec.doctorName || "N/A"} | Patient: ${rec.patientName || "N/A"}`}
+                                icon="📄"
+                            />
+                        )) : <p>No health records available.</p>}
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
 
-function ListItem({ title, date, icon }) {
-  return (
-    <div style={styles.item}>
-      <div style={styles.iconBox}>{icon}</div>
-      <div style={styles.itemContent}>
-        <div style={styles.itemTitle}>{title}</div>
-        <div style={styles.itemDate}>{date}</div>
-      </div>
-      <button style={styles.viewBtn}>View</button>
-    </div>
-  );
+function ListItem({ title, subtitle, icon }) {
+    return (
+        <div style={styles.item}>
+            <div style={styles.iconBox}>{icon}</div>
+            <div style={styles.itemContent}>
+                <div style={styles.itemTitle}>{title}</div>
+                {subtitle && <div style={styles.itemDate}>{subtitle}</div>}
+            </div>
+            <button style={styles.viewBtn}>View</button>
+        </div>
+    );
 }
+
 
 const styles = {
   container: { 

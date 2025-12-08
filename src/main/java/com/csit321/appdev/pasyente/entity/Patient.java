@@ -2,19 +2,24 @@ package com.csit321.appdev.pasyente.entity;
 
 import jakarta.persistence.*;
 
-
 @Entity
 @Table(name = "PATIENT")
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long patient_id;
- 
+    private Long patientId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     public void setPatientId(Long patientId){
-        this.patient_id = patientId;
+        this.patientId = patientId;
     }
     public Long getPatientId(){
-        return patient_id;
+        return patientId;
     }
 
+    public void setUser(User user) { this.user = user; }
+    public User getUser() { return user; }
 }
