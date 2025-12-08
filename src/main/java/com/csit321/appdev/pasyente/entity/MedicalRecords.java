@@ -8,14 +8,20 @@ public class MedicalRecords {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long recordID;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id")
-    private Patient patient;
-    @Column(name = "description")
+
+    @Column(nullable = false)
     private String description;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id")
-    private Doctor doctor;
+
+    private java.time.LocalDate recordDate;
+
+    private String doctorName;
+
+    private String type;
+
+    private String status;
+
+    @Column(nullable = false)
+    private String userEmail;
 
     public void setRecordID(Long recordID){
         this.recordID = recordID;
@@ -30,16 +36,43 @@ public class MedicalRecords {
         return description;
     }
 
-    public void setPatient(Patient patient) {
-        this.patient = patient;
+    public java.time.LocalDate getRecordDate() {
+        return recordDate;
     }
-    public Patient getPatient() {
-        return patient;
+
+    public void setRecordDate(java.time.LocalDate recordDate) {
+        this.recordDate = recordDate;
     }
-    public void setDoctor(Doctor doctor){
-        this.doctor = doctor;
+
+    public String getDoctorName() {
+        return doctorName;
     }
-    public Doctor getDoctor(){
-        return doctor;
+
+    public void setDoctorName(String doctorName) {
+        this.doctorName = doctorName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 }

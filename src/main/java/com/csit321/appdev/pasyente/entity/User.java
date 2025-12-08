@@ -21,6 +21,14 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    // Optional profile fields
+    private String phoneNumber;
+    private String address;
+    private String language;
+    private Boolean newsletter;
+    private Boolean twoFactorEnabled;
+    private java.time.LocalDate dateOfBirth;
+
     // Constructors
     public User() {}
 
@@ -42,6 +50,24 @@ public class User {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
+
+    public Boolean getNewsletter() { return newsletter; }
+    public void setNewsletter(Boolean newsletter) { this.newsletter = newsletter; }
+
+    public Boolean getTwoFactorEnabled() { return twoFactorEnabled; }
+    public void setTwoFactorEnabled(Boolean twoFactorEnabled) { this.twoFactorEnabled = twoFactorEnabled; }
+
+    public java.time.LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(java.time.LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
 
     // Login function (for demonstration)
     public boolean login(String inputPassword) {

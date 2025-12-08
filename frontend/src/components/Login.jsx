@@ -208,8 +208,8 @@ function Login({ onLogin }) {
       // Only parse JSON if response is OK
       const data = await response.json();
 
-      if (data && data.name) {
-        onLogin(data.name); // successful login
+      if (data && data.email) {
+        onLogin(data); // successful login with full profile
       } else {
         alert("Login failed");
       }
