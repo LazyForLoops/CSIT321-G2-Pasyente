@@ -260,14 +260,12 @@ import axios from 'axios';
 function HealthRecords() {
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showViewModal, setShowViewModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [newRecord, setNewRecord] = useState({
         description: '',
         doctorId: '',
         patientId: ''
     });
-    const [selectedRecord, setSelectedRecord] = useState(null);
 
     useEffect(() => {
         fetchRecords();
@@ -280,6 +278,11 @@ function HealthRecords() {
             .finally(() => setLoading(false));
     };
 
+    // const handleInputChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setNewRecord({ ...newRecord, [name]: value });
+    // };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewRecord({
@@ -288,20 +291,16 @@ function HealthRecords() {
         });
     };
 
+
     const handleAddRecord = (e) => {
         e.preventDefault();
         axios.post('http://localhost:8080/api/medical-records', newRecord)
             .then(() => {
                 fetchRecords();
-                setShowAddModal(false);
+                setShowModal(false);
                 setNewRecord({ description: '', doctorId: '', patientId: '' });
             })
             .catch(error => console.error('Error adding record:', error));
-    };
-
-    const handleViewRecord = (record) => {
-        setSelectedRecord(record);
-        setShowViewModal(true);
     };
 
     if (loading) return <div style={{ padding: '40px' }}>Loading medical records...</div>;
@@ -311,9 +310,11 @@ function HealthRecords() {
             <div style={styles.header}>
                 <div>
                     <h1 style={styles.pageTitle}>Medical Records</h1>
-                    <p style={styles.pageSubtitle}>Overview of all your medical records.</p>
+                    <p style={styles.pageSubtitle}>
+                        Overview of all your medical records.
+                    </p>
                 </div>
-                <button style={styles.primaryBtn} onClick={() => setShowAddModal(true)}>+ Add New Record</button>
+                <button style={styles.primaryBtn} onClick={() => setShowModal(true)}>+ Add New Record</button>
             </div>
 
             <div style={styles.card}>
@@ -329,24 +330,15 @@ function HealthRecords() {
                                 <th style={styles.th}>Description</th>
                                 <th style={styles.th}>Doctor ID</th>
                                 <th style={styles.th}>Patient ID</th>
-                                <th style={styles.th}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {records.map((record) => (
-                                <tr key={record.recordID} style={styles.row}>
+                                <tr key={record.recordid} style={styles.row}>
                                     <td style={styles.td}>{record.recordID}</td>
                                     <td style={styles.td}>{record.description}</td>
                                     <td style={styles.td}>{record.doctorID}</td>
                                     <td style={styles.td}>{record.patientID}</td>
-                                    <td style={styles.td}>
-                                        <button 
-                                            style={styles.primaryBtn} 
-                                            onClick={() => handleViewRecord(record)}
-                                        >
-                                            View
-                                        </button>
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -358,8 +350,7 @@ function HealthRecords() {
                 </div>
             </div>
 
-            {/* Add Record Modal */}
-            {showAddModal && (
+            {showModal && (
                 <div style={styles.modalOverlay}>
                     <div style={styles.modal}>
                         <h2>Add Medical Record</h2>
@@ -390,29 +381,12 @@ function HealthRecords() {
                                 style={styles.input}
                                 required
                             />
+
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                                <button type="button" onClick={() => setShowAddModal(false)} style={styles.cancelBtn}>Cancel</button>
+                                <button type="button" onClick={() => setShowModal(false)} style={styles.cancelBtn}>Cancel</button>
                                 <button type="submit" style={styles.primaryBtn}>Add Record</button>
                             </div>
                         </form>
-                    </div>
-                </div>
-            )}
-
-            {/* View Record Modal */}
-            {showViewModal && selectedRecord && (
-                <div style={styles.modalOverlay}>
-                    <div style={styles.modal}>
-                        <h2>View Medical Record</h2>
-                        <p><strong>Record ID:</strong> {selectedRecord.recordID}</p>
-                        <p><strong>Description:</strong> {selectedRecord.description}</p>
-                        <p><strong>Doctor ID:</strong> {selectedRecord.doctorID}</p>
-                        <p><strong>Doctor Name:</strong> {selectedRecord.doctorName}</p>
-                        <p><strong>Patient ID:</strong> {selectedRecord.patientID}</p>
-                        <p><strong>Patient Name:</strong> {selectedRecord.patientName}</p>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                            <button onClick={() => setShowViewModal(false)} style={styles.primaryBtn}>Close</button>
-                        </div>
                     </div>
                 </div>
             )}
@@ -538,24 +512,7 @@ const styles = {
     textAlign: 'right',
     fontSize: '0.85rem',
     color: '#718096'
-  },
-  modalOverlay: {
-        position: 'fixed',
-        top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000
-    },
-    modal: {
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '30px',
-        width: '400px',
-        maxWidth: '90%',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-    },
+  }
 };
 
 export default HealthRecords;
