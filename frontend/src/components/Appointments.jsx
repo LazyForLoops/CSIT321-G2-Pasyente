@@ -93,8 +93,8 @@ function Appointments() {
                 <th style={styles.th}>Appointment ID</th>
                 <th style={styles.th}>Date</th>
                 <th style={styles.th}>Reason</th>
-                <th style={styles.th}>Doctor ID</th>
-                <th style={styles.th}>Patient ID</th>
+                <th style={styles.th}>Doctor</th>
+                <th style={styles.th}>Patient</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Action</th>
               </tr>
@@ -105,8 +105,8 @@ function Appointments() {
                   <td style={styles.td}>{appointment.appointmentID}</td>
                   <td style={styles.td}>{new Date(appointment.appointmentDate).toLocaleDateString()}</td>
                   <td style={styles.td}>{appointment.reason}</td>
-                  <td style={styles.td}>{appointment.doctorID}</td>
-                  <td style={styles.td}>{appointment.patientID}</td>
+                  <td style={styles.td}>{appointment.doctor?.user?.name || 'N/A'}</td>
+                  <td style={styles.td}>{appointment.patient?.user?.name || 'N/A'}</td>
                   <td style={styles.td}>
                     <span style={{
                       ...styles.statusBadge,
@@ -202,8 +202,8 @@ function Appointments() {
             <p><strong>Appointment ID:</strong> {selectedAppointment.appointmentID}</p>
             <p><strong>Date:</strong> {new Date(selectedAppointment.appointmentDate).toLocaleString()}</p>
             <p><strong>Reason:</strong> {selectedAppointment.reason}</p>
-            <p><strong>Doctor ID:</strong> {selectedAppointment.doctorID}</p>
-            <p><strong>Patient ID:</strong> {selectedAppointment.patientID}</p>
+            <p><strong>Doctor:</strong> {selectedAppointment.doctor?.user?.name || 'N/A'}</p>
+            <p><strong>Patient:</strong> {selectedAppointment.patient?.user?.name || 'N/A'}</p>
             <p><strong>Status:</strong> {selectedAppointment.status}</p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
               <button onClick={() => setShowViewModal(false)} style={styles.primaryBtn}>Close</button>
