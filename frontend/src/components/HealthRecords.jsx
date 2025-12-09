@@ -270,11 +270,20 @@ function HealthRecords() {
     const [selectedRecord, setSelectedRecord] = useState(null);
 
     useEffect(() => {
-        fetchRecords();
+        // Get current user from localStorage
+        const userObj = localStorage.getItem('pasyente_user_obj');
+        if (userObj) {
+            const user = JSON.parse(userObj);
+            setNewRecord(prev => ({
+                ...prev,
+                patientId: user.id
+            }));
+            fetchRecords(user.id);
+        }
     }, []);
 
-    const fetchRecords = () => {
-        axios.get('http://localhost:8080/api/medical-records')
+    const fetchRecords = (patientId) => {
+        axios.get(`http://localhost:8080/api/medical-records/patient/${patientId}`)
             .then(response => setRecords(response.data))
             .catch(error => console.error('Error fetching medical records:', error))
             .finally(() => setLoading(false));
@@ -327,8 +336,8 @@ function HealthRecords() {
                             <tr style={styles.headerRow}>
                                 <th style={styles.th}>Record ID</th>
                                 <th style={styles.th}>Description</th>
-                                <th style={styles.th}>Doctor ID</th>
-                                <th style={styles.th}>Patient ID</th>
+                                <th style={styles.th}>Doctor</th>
+                                <th style={styles.th}>Patient</th>
                                 <th style={styles.th}>Action</th>
                             </tr>
                         </thead>
@@ -337,8 +346,8 @@ function HealthRecords() {
                                 <tr key={record.recordID} style={styles.row}>
                                     <td style={styles.td}>{record.recordID}</td>
                                     <td style={styles.td}>{record.description}</td>
-                                    <td style={styles.td}>{record.doctorID}</td>
-                                    <td style={styles.td}>{record.patientID}</td>
+                                    <td style={styles.td}>{record.doctorName || 'N/A'}</td>
+                                    <td style={styles.td}>{record.patientName || 'N/A'}</td>
                                     <td style={styles.td}>
                                         <button 
                                             style={styles.primaryBtn} 
