@@ -32,6 +32,11 @@ public class AuthService {
             throw new RuntimeException("Email already exists");
         }
 
+        // Default to "Patient" if role is not provided
+        if (role == null || role.isEmpty()) {
+            role = "Patient";
+        }
+
         User user = new User();
         user.setName(name);
         user.setEmail(email);

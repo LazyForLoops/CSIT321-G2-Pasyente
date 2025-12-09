@@ -1,11 +1,12 @@
 package com.csit321.appdev.pasyente.service;
 
-import com.csit321.appdev.pasyente.entity.Patient;
-import com.csit321.appdev.pasyente.repository.PatientRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.csit321.appdev.pasyente.entity.Patient;
+import com.csit321.appdev.pasyente.repository.PatientRepository;
 
 @Service
 public class PatientService {
@@ -22,6 +23,10 @@ public class PatientService {
 
     public Optional<Patient> getPatientById(Long id) {
         return patientRepository.findById(id);
+    }
+
+    public Optional<Patient> getPatientByUserId(Long userId) {
+        return patientRepository.findByUserUserId(userId);
     }
 
     public Patient savePatient(Patient patient) {

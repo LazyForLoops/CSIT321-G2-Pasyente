@@ -59,7 +59,12 @@
 // User.java
 package com.csit321.appdev.pasyente.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
@@ -89,6 +94,7 @@ public class User {
 
     // Getters and setters
     public Long getUserId() { return userId; }
+    public Long getId() { return userId; } // Alias for frontend compatibility
     public void setUserId(Long userId) { this.userId = userId; }
 
     public String getName() { return name; }

@@ -209,14 +209,48 @@ function Login({ onLogin }) {
       const data = await response.json();
 
       if (data && data.name) {
-        // Store the full user object including ID
-        const userObj = {
-          name: data.name,
-          id: data.id,
-          email: data.email
-        };
-        localStorage.setItem('pasyente_user_obj', JSON.stringify(userObj));
-        onLogin(data.name); // successful login
+        // Fetch patient ID from user ID (role-aware)
+        try {
+          const patientResponse = await fetch(`http://localhost:8080/api/patients/user/${data.id}`);
+          let userObj;
+          
+          if (patientResponse.ok) {
+            const patientData = await patientResponse.json();
+            // Store the full user object including patient ID
+            userObj = {
+              name: data.name,
+              id: patientData.patientId, // Use patient ID
+              email: data.email,
+              userId: data.id,
+              role: "Patient"
+            };
+          } else {
+            // Not a patient - might be a doctor or other role
+            console.log("User is not a patient, storing basic info");
+            userObj = {
+              name: data.name,
+              id: data.id,
+              email: data.email,
+              userId: data.id,
+              role: data.role || "Unknown"
+            };
+          }
+          
+          localStorage.setItem('pasyente_user_obj', JSON.stringify(userObj));
+          onLogin(data.name); // successful login
+        } catch (patientError) {
+          console.error("Error fetching patient:", patientError);
+          // Still login even if patient fetch fails
+          const userObj = {
+            name: data.name,
+            id: data.id,
+            email: data.email,
+            userId: data.id,
+            role: data.role || "Unknown"
+          };
+          localStorage.setItem('pasyente_user_obj', JSON.stringify(userObj));
+          onLogin(data.name);
+        }
       } else {
         alert("Login failed");
       }

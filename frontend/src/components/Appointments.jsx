@@ -31,20 +31,17 @@ function Appointments() {
   }, []);
 
   const fetchAppointments = () => {
-    axios.get('http://localhost:8080/api/appointments')
-      .then(response => {
-        const userObj = localStorage.getItem('pasyente_user_obj');
-        if (userObj) {
-          const user = JSON.parse(userObj);
-          // Filter appointments by current patient ID
-          const filteredAppointments = response.data.filter(apt => apt.patientID === user.id);
-          setAppointments(filteredAppointments);
-        } else {
-          setAppointments(response.data);
-        }
-      })
-      .catch(error => console.error('Error fetching appointments:', error))
-      .finally(() => setLoading(false));
+    const userObj = localStorage.getItem('pasyente_user_obj');
+    if (userObj) {
+      const user = JSON.parse(userObj);
+      // Fetch appointments specifically for this patient
+      axios.get(`http://localhost:8080/api/appointments/patient/${user.id}`)
+        .then(response => setAppointments(response.data))
+        .catch(error => console.error('Error fetching appointments:', error))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e) => {
