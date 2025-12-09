@@ -209,6 +209,13 @@ function Login({ onLogin }) {
       const data = await response.json();
 
       if (data && data.name) {
+        // Store the full user object including ID
+        const userObj = {
+          name: data.name,
+          id: data.id,
+          email: data.email
+        };
+        localStorage.setItem('pasyente_user_obj', JSON.stringify(userObj));
         onLogin(data.name); // successful login
       } else {
         alert("Login failed");

@@ -1,13 +1,9 @@
 package com.csit321.appdev.pasyente.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.csit321.appdev.pasyente.entity.User;
 import com.csit321.appdev.pasyente.service.UserService;
 
 @RestController
@@ -29,17 +25,6 @@ public class UserController {
     //     }
     //     return ResponseEntity.ok(savedUser);
     // }
-
-
-    @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody User user) {
-        User loggedInUser = userService.loginByEmail(user.getEmail(), user.getPassword());
-        if (loggedInUser == null) {
-            return ResponseEntity.status(401).build(); // Unauthorized
-        }
-        return ResponseEntity.ok(loggedInUser);
-    }
-
 
 }
 

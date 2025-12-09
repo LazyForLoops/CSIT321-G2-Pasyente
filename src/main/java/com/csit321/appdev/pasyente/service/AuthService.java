@@ -1,14 +1,15 @@
 // AuthService.java
 package com.csit321.appdev.pasyente.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.csit321.appdev.pasyente.entity.Doctor;
 import com.csit321.appdev.pasyente.entity.Patient;
 import com.csit321.appdev.pasyente.entity.User;
 import com.csit321.appdev.pasyente.repository.DoctorRepository;
 import com.csit321.appdev.pasyente.repository.PatientRepository;
 import com.csit321.appdev.pasyente.repository.UserRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -38,15 +39,6 @@ public class AuthService {
         user.setRole(role);
         user = userRepository.save(user);
 
-        // Create corresponding patient or doctor
-        // if ("Patient".equalsIgnoreCase(role)) {
-        //     Patient patient = new Patient();
-        //     patientRepository.save(patient);
-        // } else if ("Doctor".equalsIgnoreCase(role)) {
-        //     Doctor doctor = new Doctor();
-        //     doctorRepository.save(doctor);
-        // }
-
         if ("Patient".equalsIgnoreCase(role)) {
             Patient patient = new Patient();
             patient.setUser(user);
@@ -57,7 +49,17 @@ public class AuthService {
             doctorRepository.save(doctor);
         }
 
+        return user;
+    }
 
+    public User loginUser(String email, String password) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Simple password comparison (in production, use bcrypt or similar)
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid password");
+        }
 
         return user;
     }
