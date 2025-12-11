@@ -2,347 +2,260 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function Appointments() {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [newAppointment, setNewAppointment] = useState({
-    appointmentDate: '',
-    reason: '',
-    doctorId: '',
-    patientId: '',
-    status: 'Pending'
-  });
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newAppointment, setNewAppointment] = useState({ appointmentDate: '', reason: '', doctorId: '', patientId: '' });
+    const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    // Get current user from localStorage
-    const userObj = localStorage.getItem('pasyente_user_obj');
-    if (userObj) {
-      const user = JSON.parse(userObj);
-      setCurrentUser(user);
-      setNewAppointment(prev => ({
-        ...prev,
-        patientId: user.id
-      }));
-    }
-    fetchAppointments();
-  }, []);
+    useEffect(() => {
+        const userStr = localStorage.getItem('pasyente_user_obj');
+        if (!userStr) return;
+        const user = JSON.parse(userStr);
+        setCurrentUser(user);
+        fetchAppointments(user);
 
-  const fetchAppointments = () => {
-    const userObj = localStorage.getItem('pasyente_user_obj');
-    if (userObj) {
-      const user = JSON.parse(userObj);
-      // Fetch appointments specifically for this patient
-      axios.get(`http://localhost:8080/api/appointments/patient/${user.id}`)
-        .then(response => setAppointments(response.data))
-        .catch(error => console.error('Error fetching appointments:', error))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  };
+        setNewAppointment({
+            appointmentDate: '',
+            reason: '',
+            patientId: user.role === 'Patient' ? user.id : '',
+            doctorId: user.role === 'Doctor' ? user.id : ''
+        });
+    }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewAppointment({
-      ...newAppointment,
-      [name]: name === "doctorId" || name === "patientId" ? Number(value) : value
-    });
-  };
+    const fetchAppointments = (user) => {
+        setLoading(true);
+        const url = user.role === 'Patient'
+            ? `http://localhost:8080/api/appointments/patient/${user.id}`
+            : `http://localhost:8080/api/appointments/doctor/${user.id}`;
+        axios.get(url)
+            .then(res => setAppointments(res.data))
+            .catch(err => console.error(err))
+            .finally(() => setLoading(false));
+    };
 
-  const handleAddAppointment = (e) => {
-    e.preventDefault();
-    axios.post('http://localhost:8080/api/appointments', newAppointment)
-      .then(() => {
-        fetchAppointments();
-        setShowAddModal(false);
-        const userObj = currentUser || JSON.parse(localStorage.getItem('pasyente_user_obj'));
-        setNewAppointment({ appointmentDate: '', reason: '', doctorId: '', patientId: userObj?.id || '', status: 'Pending' });
-      })
-      .catch(error => console.error('Error adding appointment:', error));
-  };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setNewAppointment(prev => ({ ...prev, [name]: value }));
+    };
 
-  const handleViewAppointment = (appointment) => {
-    setSelectedAppointment(appointment);
-    setShowViewModal(true);
-  };
+    const handleAdd = async (e) => {
+        e.preventDefault();
+        if (!newAppointment.reason || !newAppointment.patientId || !newAppointment.doctorId) {
+            alert("Patient, Doctor, and Reason are required");
+            return;
+        }
 
-  if (loading) return <div style={{ padding: '40px' }}>Loading appointments...</div>;
+        try {
+            await axios.post('http://localhost:8080/api/appointments', newAppointment);
+            setShowAddModal(false);
+            fetchAppointments(currentUser);
+        } catch (err) {
+            alert(err.response?.data || 'Failed to create appointment');
+        }
+    };
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.pageTitle}>Appointments</h1>
-          <p style={styles.pageSubtitle}>Manage your medical appointments.</p>
-        </div>
-        <button style={styles.primaryBtn} onClick={() => setShowAddModal(true)}>+ Book New Appointment</button>
-      </div>
+    const updateStatus = (id, status) => {
+        axios.put(`http://localhost:8080/api/appointments/${id}/status?status=${status}`)
+            .then(() => fetchAppointments(currentUser))
+            .catch(err => alert(err.response?.data || 'Failed to update'));
+    };
 
-      <div style={styles.card}>
-        <div style={styles.cardHeader}>
-          <h3 style={styles.cardTitle}>Your Appointments</h3>
-        </div>
+    if (loading) return <div>Loading...</div>;
 
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr style={styles.headerRow}>
-                <th style={styles.th}>Appointment ID</th>
-                <th style={styles.th}>Date</th>
-                <th style={styles.th}>Reason</th>
-                <th style={styles.th}>Doctor</th>
-                <th style={styles.th}>Patient</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {appointments.map((appointment) => (
-                <tr key={appointment.appointmentID} style={styles.row}>
-                  <td style={styles.td}>{appointment.appointmentID}</td>
-                  <td style={styles.td}>{new Date(appointment.appointmentDate).toLocaleDateString()}</td>
-                  <td style={styles.td}>{appointment.reason}</td>
-                  <td style={styles.td}>{appointment.doctor?.user?.name || 'N/A'}</td>
-                  <td style={styles.td}>{appointment.patient?.user?.name || 'N/A'}</td>
-                  <td style={styles.td}>
-                    <span style={{
-                      ...styles.statusBadge,
-                      backgroundColor: appointment.status === 'Confirmed' ? '#def7ec' : appointment.status === 'Pending' ? '#feecdc' : '#f3f4f6',
-                      color: appointment.status === 'Confirmed' ? '#03543f' : appointment.status === 'Pending' ? '#9c4221' : '#6b7280'
-                    }}>
-                      {appointment.status}
-                    </span>
-                  </td>
-                  <td style={styles.td}>
-                    <button 
-                      style={styles.primaryBtn} 
-                      onClick={() => handleViewAppointment(appointment)}
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div style={styles.cardFooter}>
-          Showing {appointments.length} appointments
-        </div>
-      </div>
-
-      {/* Add Appointment Modal */}
-      {showAddModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h2>Book New Appointment</h2>
-            <form onSubmit={handleAddAppointment}>
-              <input
-                type="datetime-local"
-                name="appointmentDate"
-                value={newAppointment.appointmentDate}
-                onChange={handleInputChange}
-                style={styles.input}
-                required
-              />
-              <textarea
-                name="reason"
-                placeholder="Reason for appointment"
-                value={newAppointment.reason}
-                onChange={handleInputChange}
-                style={{...styles.input, height: '80px'}}
-                required
-              />
-              <input
-                type="number"
-                name="doctorId"
-                placeholder="Doctor ID"
-                value={newAppointment.doctorId}
-                onChange={handleInputChange}
-                style={styles.input}
-                required
-              />
-              <input
-                type="number"
-                name="patientId"
-                placeholder="Patient ID"
-                value={newAppointment.patientId}
-                onChange={handleInputChange}
-                style={styles.input}
-                required
-              />
-              <select
-                name="status"
-                value={newAppointment.status}
-                onChange={handleInputChange}
-                style={styles.input}
-              >
-                <option value="Pending">Pending</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Completed">Completed</option>
-              </select>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setShowAddModal(false)} style={styles.cancelBtn}>Cancel</button>
-                <button type="submit" style={styles.primaryBtn}>Book Appointment</button>
-              </div>
-            </form>
+    return (
+        <div style={styles.container}>
+          <div style={styles.header}>
+            <h1 style={styles.title}>Appointments</h1>
+            <button style={styles.primaryBtn} onClick={() => setShowAddModal(true)}>+ New Appointment</button>
           </div>
-        </div>
-      )}
+            
+            <table style={styles.table}>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Date</th><th>Reason</th><th>Doctor</th><th>Patient</th><th>Status</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {appointments.map(app => (
+                        <tr key={app.appointmentID}>
+                            <td>{app.appointmentID}</td>
+                            <td>{new Date(app.appointmentDate).toLocaleString()}</td>
+                            <td>{app.reason}</td>
+                            <td>{app.doctor?.user?.name}</td>
+                            <td>{app.patient?.user?.name}</td>
+                            <td>{app.status}</td>
+                            <td>
+                                {app.status === 'Pending' && (
+                                    <>
+                                        <button style={styles.confirmBtn} onClick={() => updateStatus(app.appointmentID, 'Confirmed')}>Confirm</button>
+                                        <button style={styles.denyBtn} onClick={() => updateStatus(app.appointmentID, 'Denied')}>Deny</button>
+                                    </>
+                                )}
+                                {app.status !== 'Aborted' && (
+                                    <button style={styles.abortBtn} onClick={() => updateStatus(app.appointmentID, 'Aborted')}>Abort</button>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
 
-      {/* View Appointment Modal */}
-      {showViewModal && selectedAppointment && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h2>View Appointment</h2>
-            <p><strong>Appointment ID:</strong> {selectedAppointment.appointmentID}</p>
-            <p><strong>Date:</strong> {new Date(selectedAppointment.appointmentDate).toLocaleString()}</p>
-            <p><strong>Reason:</strong> {selectedAppointment.reason}</p>
-            <p><strong>Doctor:</strong> {selectedAppointment.doctor?.user?.name || 'N/A'}</p>
-            <p><strong>Patient:</strong> {selectedAppointment.patient?.user?.name || 'N/A'}</p>
-            <p><strong>Status:</strong> {selectedAppointment.status}</p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-              <button onClick={() => setShowViewModal(false)} style={styles.primaryBtn}>Close</button>
-            </div>
-          </div>
+            {showAddModal && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modal}>
+                        <h2>New Appointment</h2>
+                        <form onSubmit={handleAdd}>
+                            <input style={styles.input} type="datetime-local" name="appointmentDate" value={newAppointment.appointmentDate} onChange={handleChange} required />
+                            <textarea style={styles.textarea} name="reason" value={newAppointment.reason} onChange={handleChange} placeholder="Reason" required />
+                            {currentUser.role !== 'Patient' && <input style={styles.input} type="number" name="patientId" value={newAppointment.patientId} onChange={handleChange} placeholder="Patient ID" required />}
+                            {currentUser.role !== 'Doctor' && <input style={styles.input} type="number" name="doctorId" value={newAppointment.doctorId} onChange={handleChange} placeholder="Doctor ID" required />}
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                              <button style={styles.formBtns} type="submit">Add</button>
+                              <button style={styles.cancelBtn} type="button" onClick={() => setShowAddModal(false)}>Cancel</button>
+                            </div>
+                            
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 
 const styles = {
-  container: { 
-    padding: '40px', 
-    width: '100%', 
-    maxWidth: '1200px', 
-    margin: '0 auto',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-  },
-  header: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'flex-start', 
-    marginBottom: '30px' 
-  },
-  pageTitle: { 
-    fontSize: '2rem', 
-    fontWeight: '800', 
-    color: '#1a202c', 
-    margin: '0 0 8px 0' 
-  },
-  pageSubtitle: { 
-    color: '#718096', 
-    margin: 0, 
-    fontSize: '1rem' 
-  },
-  primaryBtn: { 
-    padding: '12px 24px', 
-    backgroundColor: '#5865F2', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '8px', 
-    fontWeight: '600', 
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    boxShadow: '0 2px 5px rgba(88, 101, 242, 0.3)'
-  },
-  cancelBtn: { 
-    padding: '12px 24px', 
-    backgroundColor: '#e2e8f0', 
-    color: '#4a5568', 
-    border: 'none', 
-    borderRadius: '8px', 
-    fontWeight: '600', 
-    cursor: 'pointer',
-    fontSize: '0.9rem'
-  },
-  card: { 
-    backgroundColor: 'white', 
-    borderRadius: '12px', 
-    padding: '30px', 
-    border: '1px solid #e2e8f0', 
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)' 
-  },
-  cardHeader: { marginBottom: '25px' },
-  cardTitle: { 
-    fontSize: '1.25rem', 
-    fontWeight: '700', 
-    color: '#2d3748', 
-    margin: '0 0 5px 0' 
-  },
-  tableWrapper: { overflowX: 'auto' },
-  table: { 
-    width: '100%', 
-    borderCollapse: 'separate', 
-    borderSpacing: '0' 
-  },
-  headerRow: { textAlign: 'left' },
-  th: { 
-    padding: '15px 10px', 
-    color: '#718096', 
-    fontSize: '0.75rem', 
-    textTransform: 'uppercase', 
-    fontWeight: '700', 
-    letterSpacing: '0.05em',
-    borderBottom: '1px solid #e2e8f0'
-  },
-  row: { 
-    transition: 'background-color 0.2s' 
-  },
-  td: { 
-    padding: '16px 10px', 
-    color: '#4a5568', 
-    fontSize: '0.9rem', 
-    verticalAlign: 'middle',
-    borderBottom: '1px solid #f7fafc'
-  },
-  statusBadge: { 
-    padding: '4px 12px', 
-    borderRadius: '999px', 
-    fontSize: '0.75rem', 
-    fontWeight: '700',
-    display: 'inline-block'
-  },
-  cardFooter: {
-    marginTop: '20px',
-    textAlign: 'right',
-    fontSize: '0.85rem',
-    color: '#718096'
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0, 
-    left: 0, 
-    right: 0, 
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000
-  },
-  modal: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '30px',
-    width: '400px',
-    maxWidth: '90%',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-  },
-  input: {
-    width: '100%',
-    padding: '12px',
-    marginBottom: '10px',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
-    fontSize: '1rem',
-    boxSizing: 'border-box'
-  }
+    container: {
+        marginLeft: '50px',
+        alignItems: 'flex-start', 
+        padding: '30px',
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        backgroundColor: '#f7f9fc',
+        minHeight: '100vh'
+    },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px'
+    },
+    title: {
+        fontSize: '2rem',
+        fontWeight: '700',
+        color: '#1a202c',
+        margin: 0
+    },
+    primaryBtn: {
+        padding: '10px 20px',
+        backgroundColor: '#5865F2',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '8px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        fontSize: '0.9rem',
+        transition: 'all 0.2s ease-in-out'
+    },
+    table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        marginTop: '20px',
+        backgroundColor: '#fff',
+        borderRadius: '10px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+    },
+    th: {
+        backgroundColor: '#f1f5f9',
+        color: '#4a5568',
+        textAlign: 'left',
+        padding: '12px',
+        fontWeight: '700',
+        fontSize: '0.85rem',
+        borderBottom: '1px solid #e2e8f0'
+    },
+    td: {
+        padding: '12px',
+        fontSize: '0.9rem',
+        color: '#2d3748',
+        borderBottom: '1px solid #e2e8f0'
+    },
+    actionBtn: {
+        padding: '6px 12px',
+        borderRadius: '6px',
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: '0.85rem',
+        marginRight: '5px'
+    },
+    confirmBtn: { backgroundColor: '#34d399', color: '#fff' },
+    denyBtn: { backgroundColor: '#f87171', color: '#fff' },
+    abortBtn: { backgroundColor: '#facc15', color: '#1a202c' },
+    modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    },
+    modal: {
+        backgroundColor: '#fff',
+        padding: '25px',
+        borderRadius: '12px',
+        width: '600px',
+        maxWidth: '90%',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+    },
+    input: {
+        width: '80%',
+        padding: '10px',
+        marginTop: '20px',
+        borderRadius: '8px',
+        border: '1px solid #cbd5e0',
+        fontSize: '0.9rem',
+        boxSizing: 'border-box'
+    },
+    textarea: {
+        width: '80%',
+        padding: '10px',
+        marginTop: '20px',
+        borderRadius: '8px',
+        border: '1px solid #cbd5e0',
+        fontSize: '0.9rem',
+        minHeight: '70px',
+        resize: 'vertical',
+        outline: 'none'
+    },
+    formBtns: {
+        padding: '10px 20px',
+        backgroundColor: '#5865F2',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '8px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        fontSize: '0.9rem',
+        transition: 'all 0.2s ease-in-out'
+    },
+    cancelBtn: {
+        padding: '6px 12px',
+        borderRadius: '6px',
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: '0.85rem',
+        backgroundColor: '#e2e8f0',
+        color: '#4a5568'
+    },
+
 };
+
+
 
 export default Appointments;

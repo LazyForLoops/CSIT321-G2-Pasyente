@@ -380,6 +380,7 @@ function HealthRecords({ refreshRecords }) {
 
 const styles = {
   container: { 
+    marginLeft: '50px',
     padding: '40px', 
     width: '100%', 
     maxWidth: '1200px', 
