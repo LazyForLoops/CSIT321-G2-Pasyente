@@ -15,6 +15,10 @@ function HealthRecords({ refreshRecords }) {
         patientId: ""
     });
 
+    const userObj = JSON.parse(localStorage.getItem('pasyente_user_obj'));
+    const isDoctor = userObj.role === "Doctor";
+
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm({ ...form, [name]: name === "doctorId" || name === "patientId" ? Number(value) : value });
@@ -126,13 +130,13 @@ function HealthRecords({ refreshRecords }) {
             let request;
 
             if (selectedRecord) {
-                // Editing an existing record
+                // edit
                 request = axios.put(
                     `http://localhost:8080/api/medical-records/${selectedRecord.recordID}`,
                     form
                 );
             } else {
-                // Adding a new record
+                // adding a  record
                 request = axios.post(
                     "http://localhost:8080/api/medical-records",
                     form
@@ -207,7 +211,9 @@ function HealthRecords({ refreshRecords }) {
                     <h1 style={styles.pageTitle}>Medical Records</h1>
                     <p style={styles.pageSubtitle}>Overview of all your medical records.</p>
                 </div>
+                {isDoctor && (
                 <button style={styles.primaryBtn} onClick={() => { setSelectedRecord(null); setModal({ type: "add", visible: true }); }}>+ Add New Record</button>
+                )}
             </div>
 
             <div style={styles.card}>
@@ -235,8 +241,12 @@ function HealthRecords({ refreshRecords }) {
                                     <td style={styles.td}>{record.patientName || 'N/A'}</td>
                                     <td style={styles.td}>
                                         <button style={styles.primaryBtn} onClick={() => handleViewRecord(record)}>View</button>
-                                        <button style={{ ...styles.primaryBtn, marginLeft: '5px', backgroundColor: '#f56565' }} onClick={() => handleDeleteRecord(record.recordID)}>Delete</button>
-                                        <button style={{ ...styles.primaryBtn, marginLeft: '5px', backgroundColor: '#ecc94b', color: '#1a202c' }} onClick={() => handleEditRecord(record)}>Edit</button>
+                                        {isDoctor && (
+                                            <>
+                                                <button style={{ ...styles.primaryBtn, marginLeft: '5px', backgroundColor: '#f56565' }} onClick={() => handleDeleteRecord(record.recordID)}>Delete</button>
+                                                <button style={{ ...styles.primaryBtn, marginLeft: '5px', backgroundColor: '#ecc94b', color: '#1a202c' }} onClick={() => handleEditRecord(record)}>Edit</button>
+                                            </>
+                                        )}    
                                     </td>
                                 </tr>
                             ))}

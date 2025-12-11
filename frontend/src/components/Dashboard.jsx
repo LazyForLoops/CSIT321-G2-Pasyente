@@ -28,7 +28,6 @@ function Dashboard({ userName }) {
         let url;
 
         if (userObj.role === 'Doctor') {
-            // Fetch by userId, backend resolves doctorId
             url = `http://localhost:8080/api/medical-records/my-records/${userObj.id}`;
         } else {
             url = `http://localhost:8080/api/medical-records/patient/${userObj.id}`;
