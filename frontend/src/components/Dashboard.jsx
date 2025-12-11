@@ -1,73 +1,50 @@
-// import React from 'react';
-
-// function Dashboard({ userName }) {
-//   return (
-//     <div style={styles.container}>
-//       <h1 style={styles.welcome}>Welcome back, {userName || "Patient"}!</h1>
-//       <p style={styles.subtitle}>Here's a quick overview of your health status.</p>
-
-//       <div style={styles.grid}>
-//         {/* Card 1: Upcoming Appointments */}
-//         <div style={styles.card}>
-//           <div style={styles.cardHeader}>
-//              <h3 style={styles.cardTitle}>Upcoming Appointments</h3>
-//              <span style={styles.cardAction}>View All</span>
-//           </div>
-          
-//           <div style={styles.list}>
-//             <ListItem title="Dental Check-up" date="Oct 26, 2025 at 10:00 AM" icon="🦷" />
-//             <ListItem title="Cardiology Follow-up" date="Nov 03, 2025 at 02:30 PM" icon="❤️" />
-//             <ListItem title="Physical Therapy" date="Nov 15, 2025 at 09:00 AM" icon="💪" />
-//           </div>
-//         </div>
-
-//         {/* Card 2: Recent Health Records */}
-//         <div style={styles.card}>
-//           <div style={styles.cardHeader}>
-//              <h3 style={styles.cardTitle}>Recent Health Records</h3>
-//              <span style={styles.cardAction}>View All</span>
-//           </div>
-          
-//           <div style={styles.list}>
-//             <ListItem title="Annual Physical Exam" date="Oct 20, 2025" icon="📄" />
-//             <ListItem title="Blood Test Results" date="Oct 18, 2025" icon="🩸" />
-//             <ListItem title="Vaccination Record" date="Sep 05, 2025" icon="💉" />
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function ListItem({ title, date, icon }) {
-//   return (
-//     <div style={styles.item}>
-//       <div style={styles.iconBox}>{icon}</div>
-//       <div style={styles.itemContent}>
-//         <div style={styles.itemTitle}>{title}</div>
-//         <div style={styles.itemDate}>{date}</div>
-//       </div>
-//       <button style={styles.viewBtn}>View</button>
-//     </div>
-//   );
-// }
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 function Dashboard({ userName }) {
     const [records, setRecords] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [newRecord, setNewRecord] = useState({ description: '', doctorId: '', patientId: '' });
     const [selectedRecord, setSelectedRecord] = useState(null);
 
+
     useEffect(() => {
-        fetchRecords();
+        const userObjStr = localStorage.getItem('pasyente_user_obj');
+        if (!userObjStr) return;
+
+        const userObj = JSON.parse(userObjStr);
+
+        if (userObj.role === "Patient") {
+            setNewRecord(prev => ({ ...prev, patientId: userObj.id }));
+            fetchRecords("Patient", userObj.id);
+        } else if (userObj.role === "Doctor") {
+            fetchRecords("Doctor", userObj.id);
+        }
     }, []);
 
-    const fetchRecords = () => {
-        axios.get('http://localhost:8080/api/medical-records')
-            .then(res => setRecords(res.data))
-            .catch(err => console.error('Error fetching medical records:', err));
+    const fetchRecords = async () => {
+        const userObj = JSON.parse(localStorage.getItem('pasyente_user_obj'));
+        let url;
+
+        if (userObj.role === 'Doctor') {
+            // Fetch by userId, backend resolves doctorId
+            url = `http://localhost:8080/api/medical-records/my-records/${userObj.id}`;
+        } else {
+            url = `http://localhost:8080/api/medical-records/patient/${userObj.id}`;
+        }
+
+        setLoading(true);
+        try {
+            const res = await axios.get(url);
+            setRecords(res.data);
+        } catch (err) {
+            console.error('Error fetching medical records:', err);
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     const handleViewRecord = (record) => {
         setSelectedRecord(record);
@@ -84,22 +61,36 @@ function Dashboard({ userName }) {
             <h1 style={styles.welcome}>Welcome back, {userName || "Patient"}!</h1>
             <p style={styles.subtitle}>Here's a quick overview of your health status.</p>
 
-            <div style={styles.grid}>
-                <div style={styles.card}>
-                    <div style={styles.cardHeader}>
-                        <h3 style={styles.cardTitle}>Recent Health Records</h3>
-                    </div>
-                    <div style={styles.list}>
-                        {records.length > 0 ? records.map(rec => (
-                            <ListItem 
-                                key={rec.recordID}
-                                title={rec.description}
-                                subtitle={`Doctor: ${rec.doctorName || "N/A"} | Patient: ${rec.patientName || "N/A"}`}
-                                icon="📄"
-                                onView={() => handleViewRecord(rec)}
-                            />
-                        )) : <p>No health records available.</p>}
-                    </div>
+            <div style={styles.card}>
+                <div style={styles.cardHeader}>
+                    <h3 style={styles.cardTitle}>Records List</h3>
+                </div>
+
+                <div style={styles.tableWrapper}>
+                    <table style={styles.table}>
+                        <thead>
+                            <tr style={styles.headerRow}>
+                                <th style={styles.th}>Record ID</th>
+                                <th style={styles.th}>Description</th>
+                                <th style={styles.th}>Doctor</th>
+                                <th style={styles.th}>Patient</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {records.map(record => (
+                                <tr key={record.recordID} style={styles.row}>
+                                    <td style={styles.td}>{record.recordID}</td>
+                                    <td style={styles.td}>{record.description}</td>
+                                    <td style={styles.td}>{record.doctorName || 'N/A'}</td>
+                                    <td style={styles.td}>{record.patientName || 'N/A'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style={styles.cardFooter}>
+                    Showing {records.length} records
                 </div>
             </div>
 
@@ -171,8 +162,47 @@ const styles = {
   viewBtn: { color: '#5865F2', background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer' },
   modalOverlay: { position: 'fixed', top:0, left:0, right:0, bottom:0, backgroundColor:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex: 1000 },
   modal: { backgroundColor:'white', padding:'30px', borderRadius:'12px', width:'400px', maxWidth:'90%' },
-  primaryBtn: { padding:'10px 20px', backgroundColor:'#5865F2', color:'white', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }
+  primaryBtn: { padding:'10px 20px', backgroundColor:'#5865F2', color:'white', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' },
 
+  cardHeader: { marginBottom: '25px' },
+  cardTitle: { 
+    fontSize: '1.25rem', 
+    fontWeight: '700', 
+    color: '#2d3748', 
+    margin: '0 0 5px 0' 
+  },
+  tableWrapper: { overflowX: 'auto' }, // Allows scrolling on small screens
+  table: { 
+    width: '100%', 
+    borderCollapse: 'separate', 
+    borderSpacing: '0' 
+  },
+headerRow: { textAlign: 'left' },
+  th: { 
+    padding: '15px 10px', 
+    color: '#718096', 
+    fontSize: '0.75rem', 
+    textTransform: 'uppercase', 
+    fontWeight: '700', 
+    letterSpacing: '0.05em',
+    borderBottom: '1px solid #e2e8f0'
+  },
+  row: { 
+    transition: 'background-color 0.2s' 
+  },
+  td: { 
+    padding: '16px 10px', 
+    color: '#4a5568', 
+    fontSize: '0.9rem', 
+    verticalAlign: 'middle',
+    borderBottom: '1px solid #f7fafc'
+  },
+  cardFooter: {
+    marginTop: '20px',
+    textAlign: 'right',
+    fontSize: '0.85rem',
+    color: '#718096'
+  },
 };
 
 export default Dashboard;

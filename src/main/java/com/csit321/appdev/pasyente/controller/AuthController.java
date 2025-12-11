@@ -1,4 +1,3 @@
-// AuthController.java
 package com.csit321.appdev.pasyente.controller;
 
 import org.springframework.http.ResponseEntity;

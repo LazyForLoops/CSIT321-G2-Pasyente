@@ -1,4 +1,3 @@
-// AuthService.java
 package com.csit321.appdev.pasyente.service;
 
 import org.springframework.stereotype.Service;
@@ -61,7 +60,6 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Simple password comparison (in production, use bcrypt or similar)
         if (!user.getPassword().equals(password)) {
             throw new RuntimeException("Invalid password");
         }
