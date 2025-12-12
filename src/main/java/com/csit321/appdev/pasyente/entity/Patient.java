@@ -5,32 +5,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-
-// @Entity
-// @Table(name = "PATIENT")
-// public class Patient {
-//     @Id
-//     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//     private Long patientId;
-
-//     @OneToOne(fetch = FetchType.LAZY)
-//     @JoinColumn(name = "user_id")
-//     private User user;
-
-//     public void setPatientId(Long patientId){
-//         this.patientId = patientId;
-//     }
-//     public Long getPatientId(){
-//         return patientId;
-//     }
-
-//     public void setUser(User user) { this.user = user; }
-//     public User getUser() { return user; }
-// }
-
 
 @Entity
 @Table(name = "PATIENT")
