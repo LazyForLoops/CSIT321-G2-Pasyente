@@ -1,78 +1,90 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-function HealthRecords() {
-  // Mock data matching the reference image
-  const records = [
-    { 
-      date: "2024-10-25", 
-      desc: "Annual physical check-up, general health assessment, blood pressure normal.", 
-      doctor: "Dr. Emily White", 
-      type: "Consultation", 
-      status: "Completed" 
-    },
-    { 
-      date: "2024-09-15", 
-      desc: "Routine blood test results for cholesterol and glucose levels.", 
-      doctor: "Dr. Emily White", 
-      type: "Lab Result", 
-      status: "Completed" 
-    },
-    { 
-      date: "2024-08-01", 
-      desc: "Prescription refill for chronic medication, discussion on dosage.", 
-      doctor: "Dr. Michael Green", 
-      type: "Prescription", 
-      status: "Completed" 
-    },
-    { 
-      date: "2024-07-10", 
-      desc: "Follow-up on allergy symptoms, seasonal allergy management plan.", 
-      doctor: "Dr. Sarah Johnson", 
-      type: "Consultation", 
-      status: "Completed" 
-    },
-    { 
-      date: "2024-06-20", 
-      desc: "Vaccination for annual flu shot and tetanus booster.", 
-      doctor: "Dr. Alex Lee", 
-      type: "Immunization", 
-      status: "Completed" 
-    },
-    { 
-      date: "2024-05-05", 
-      desc: "Initial consultation for persistent back pain, referred to physical therapy.", 
-      doctor: "Dr. Michael Green", 
-      type: "Consultation", 
-      status: "Completed" 
-    },
-    { 
-      date: "2024-04-12", 
-      desc: "MRI scan of lumbar spine results review.", 
-      doctor: "Dr. Michael Green", 
-      type: "Imaging", 
-      status: "Completed" 
-    },
-    { 
-      date: "2024-03-01", 
-      desc: "Dermatology visit for skin rash diagnosis and treatment plan.", 
-      doctor: "Dr. Lily Chen", 
-      type: "Dermatology", 
-      status: "Completed" 
-    },
-  ];
+function HealthRecords({ userEmail }) {
+  const [records, setRecords] = useState([]);
+  const [form, setForm] = useState({
+    date: '',
+    desc: '',
+    doctor: '',
+    type: 'Consultation',
+    status: 'Completed'
+  });
+
+  const load = async () => {
+    if (!userEmail) return;
+    try {
+      const res = await fetch(`http://localhost:8080/api/records?userEmail=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      setRecords(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error('Failed to load records', e);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, [userEmail]);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!form.desc || !form.date) {
+      alert('Please add a date and description.');
+      return;
+    }
+    try {
+      const res = await fetch('http://localhost:8080/api/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: form.desc,
+          doctorName: form.doctor,
+          type: form.type,
+          status: form.status,
+          recordDate: form.date,
+          userEmail
+        })
+      });
+      if (!res.ok) throw new Error('Unable to save');
+      setForm({ date: '', desc: '', doctor: '', type: 'Consultation', status: 'Completed' });
+      load();
+    } catch (e) {
+      console.error(e);
+      alert('Could not save record.');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    await fetch(`http://localhost:8080/api/records/${id}`, { method: 'DELETE' });
+    load();
+  };
 
   return (
     <div style={styles.container}>
-      {/* Page Header */}
       <div style={styles.header}>
         <div>
           <h1 style={styles.pageTitle}>Health Records</h1>
           <p style={styles.pageSubtitle}>Overview of all your past medical consultations, lab results, and procedures.</p>
         </div>
-        <button style={styles.primaryBtn}>+ Add New Record</button>
       </div>
 
-      {/* Content Card */}
+      <form style={styles.form} onSubmit={handleCreate}>
+        <input style={styles.input} type="date" value={form.date} onChange={(e)=>setForm({...form,date:e.target.value})}/>
+        <input style={styles.input} placeholder="Description" value={form.desc} onChange={(e)=>setForm({...form,desc:e.target.value})}/>
+        <input style={styles.input} placeholder="Doctor" value={form.doctor} onChange={(e)=>setForm({...form,doctor:e.target.value})}/>
+        <select style={styles.select} value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})}>
+          <option>Consultation</option>
+          <option>Lab Result</option>
+          <option>Imaging</option>
+          <option>Prescription</option>
+          <option>Dermatology</option>
+        </select>
+        <select style={styles.select} value={form.status} onChange={(e)=>setForm({...form,status:e.target.value})}>
+          <option>Completed</option>
+          <option>Pending</option>
+        </select>
+        <button style={styles.primaryBtn} type="submit">+ Add New Record</button>
+      </form>
+
       <div style={styles.card}>
         <div style={styles.cardHeader}>
           <h3 style={styles.cardTitle}>Your Health History</h3>
@@ -92,9 +104,12 @@ function HealthRecords() {
               </tr>
             </thead>
             <tbody>
-              {records.map((record, index) => (
-                <TableRow key={index} data={record} />
+              {records.map((record) => (
+                <TableRow key={record.recordID} data={record} onDelete={() => handleDelete(record.recordID)} />
               ))}
+              {records.length === 0 && (
+                <tr><td style={styles.td} colSpan={6}>No records yet.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -107,12 +122,12 @@ function HealthRecords() {
   );
 }
 
-function TableRow({ data }) {
+function TableRow({ data, onDelete }) {
   return (
     <tr style={styles.row}>
-      <td style={{...styles.td, fontWeight: '600', color: '#1a202c'}}>{data.date}</td>
-      <td style={styles.td}>{data.desc}</td>
-      <td style={{...styles.td, fontWeight: '600'}}>{data.doctor}</td>
+      <td style={{...styles.td, fontWeight: '600', color: '#1a202c'}}>{data.recordDate}</td>
+      <td style={styles.td}>{data.description}</td>
+      <td style={{...styles.td, fontWeight: '600'}}>{data.doctorName}</td>
       <td style={styles.td}>
         <span style={styles.typeBadge}>{data.type}</span>
       </td>
@@ -120,12 +135,8 @@ function TableRow({ data }) {
         <span style={styles.statusBadge}>{data.status}</span>
       </td>
       <td style={{...styles.td, textAlign: 'center'}}>
-        <button style={styles.iconBtn} title="View Details">
-          {/* Simple Eye Icon using SVG */}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
+        <button style={styles.iconBtn} title="Delete" onClick={onDelete}>
+          ✕
         </button>
       </td>
     </tr>
@@ -187,6 +198,9 @@ const styles = {
     color: '#718096', 
     margin: 0 
   },
+  form: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px,1fr))', gap: '10px', background: '#fff', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '24px' },
+  input: { padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.95rem' },
+  select: { padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.95rem', background: '#fff' },
   tableWrapper: { overflowX: 'auto' }, // Allows scrolling on small screens
   table: { 
     width: '100%', 

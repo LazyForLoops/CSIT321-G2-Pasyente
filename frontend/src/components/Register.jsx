@@ -1,35 +1,93 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-function Register({ onRegister, onSwitchToLogin }) {
+function Register({ onRegister }) {
   // --- Form State ---
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userRole, setUserRole] = useState("Patient"); // Default role
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
     
-    // Basic Validation
-    if (!fullName || !email || !password || !confirmPassword) {
-      alert("Please fill in all fields.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
-    if (password.length < 8) {
-      alert("Password must be at least 8 characters long.");
-      return;
+  //   // Basic Validation
+  //   if (!fullName || !email || !password || !confirmPassword) {
+  //     alert("Please fill in all fields.");
+  //     return;
+  //   }
+  //   if (password !== confirmPassword) {
+  //     alert("Passwords do not match.");
+  //     return;
+  //   }
+  //   if (password.length < 8) {
+  //     alert("Password must be at least 8 characters long.");
+  //     return;
+  //   }
+
+  //   // Simulate successful registration
+  //   // In a real app, you would send this data to your backend here.
+  //   console.log("Registering:", { fullName, email, password, userRole });
+  //   onRegister(email);
+  // };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!fullName || !email || !password || !confirmPassword) {
+    alert("Please fill in all fields.");
+    return;
+  }
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+  if (password.length < 8) {
+    alert("Password must be at least 8 characters long.");
+    return;
+  }
+
+  try {
+    // const response = await fetch("http://localhost:8080/api/users/register", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   },
+    //   body: JSON.stringify({
+    //     name: fullName,
+    //     password: password
+    //   })
+    // });
+    const response = await fetch("http://localhost:8080/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: fullName,
+        email: email,
+        password: password
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to register");
     }
 
-    // Simulate successful registration
-    // In a real app, you would send this data to your backend here.
-    console.log("Registering:", { fullName, email, password, userRole });
-    onRegister(email);
-  };
+    const data = await response.json();
+
+    // Automatically log in after registration
+    onRegister(data);
+    navigate("/");
+
+  } catch (error) {
+    console.error(error);
+    alert("Registration failed. Please try again.");
+  }
+};
+
 
   return (
     <div style={styles.container}>
@@ -114,7 +172,7 @@ function Register({ onRegister, onSwitchToLogin }) {
         <div style={styles.footer}>
           <p style={styles.loginText}>
             Already have an account?
-            <span onClick={onSwitchToLogin} style={styles.loginLink}> Login</span>
+            <Link to="/login" style={styles.loginLink}> Login</Link>
           </p>
         </div>
       </div>

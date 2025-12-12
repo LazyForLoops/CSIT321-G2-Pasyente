@@ -1,92 +1,112 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-function Profile() {
-  // State for toggles
-  const [twoFactor, setTwoFactor] = useState(false);
-  const [newsletter, setNewsletter] = useState(true);
+function Profile({ user, onProfileUpdate }) {
+  const [profile, setProfile] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    address: '',
+    language: 'English',
+    newsletter: true,
+    twoFactorEnabled: false
+  });
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user?.email) return;
+      try {
+        const res = await fetch(`http://localhost:8080/api/profile/${encodeURIComponent(user.email)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(prev => ({ ...prev, ...data }));
+        }
+      } catch (e) {
+        console.error('Failed to load profile', e);
+      }
+    };
+    loadProfile();
+  }, [user]);
+
+  const saveProfile = async () => {
+    if (!user?.email) return;
+    try {
+      const res = await fetch(`http://localhost:8080/api/profile/${encodeURIComponent(user.email)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile)
+      });
+      if (!res.ok) throw new Error('Save failed');
+      const saved = await res.json();
+      onProfileUpdate?.(saved);
+      alert('Profile saved');
+    } catch (e) {
+      console.error(e);
+      alert('Could not save profile');
+    }
+  };
 
   return (
     <div style={styles.container}>
-      
-      {/* Section 1: User Profile Header */}
       <div style={styles.card}>
         <h2 style={styles.cardHeaderTitle}>User Profile</h2>
         <div style={styles.profileHeader}>
           <div style={styles.avatarSection}>
             <img 
-              src="https://i.pravatar.cc/150?img=5" // Placeholder image
+              src="https://i.pravatar.cc/150?img=5"
               alt="Profile" 
               style={styles.avatar} 
             />
             <div>
-              <h2 style={styles.name}>Aisha Khan</h2>
-              <div style={styles.email}>aisha.khan@example.com</div>
+              <h2 style={styles.name}>{profile.name || 'User'}</h2>
+              <div style={styles.email}>{profile.email}</div>
             </div>
           </div>
-          <button style={styles.secondaryBtn}>Change Profile Picture</button>
         </div>
       </div>
 
-      {/* Section 2: Personal Information */}
       <div style={styles.card}>
         <div style={styles.sectionHeader}>
           <h3 style={styles.cardTitle}>Personal Information</h3>
-          <button style={styles.iconBtn}>✎ Edit</button>
+          <button style={styles.iconBtn} onClick={saveProfile}>💾 Save</button>
         </div>
 
         <div style={styles.formGrid}>
-          {/* Row 1 */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>Full Name</label>
-            <input type="text" defaultValue="Aisha Khan" style={styles.input} />
+            <input type="text" value={profile.name || ''} onChange={(e)=>setProfile({...profile,name:e.target.value})} style={styles.input} />
           </div>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Email Address</label>
-            <input type="email" defaultValue="aisha.khan@example.com" style={styles.input} />
+            <input type="email" value={profile.email || ''} readOnly style={{...styles.input, backgroundColor:'#edf2f7'}} />
           </div>
-
-          {/* Row 2 */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>Phone Number</label>
-            <input type="text" defaultValue="+1 (555) 123-4567" style={styles.input} />
+            <input type="text" value={profile.phoneNumber || ''} onChange={(e)=>setProfile({...profile,phoneNumber:e.target.value})} style={styles.input} />
           </div>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Date of Birth</label>
-            <input type="text" defaultValue="1990-07-21" style={styles.input} />
+            <input type="date" value={profile.dateOfBirth || ''} onChange={(e)=>setProfile({...profile,dateOfBirth:e.target.value})} style={styles.input} />
           </div>
-
-          {/* Row 3 - Full Width */}
           <div style={{...styles.inputGroup, gridColumn: 'span 2'}}>
             <label style={styles.label}>Address</label>
-            <input type="text" defaultValue="123 Healthway St., MediCity, CA 90210" style={styles.input} />
+            <input type="text" value={profile.address || ''} onChange={(e)=>setProfile({...profile,address:e.target.value})} style={styles.input} />
           </div>
         </div>
       </div>
 
-      {/* Section 3: Security */}
       <div style={styles.card}>
         <h3 style={styles.cardTitle}>Security</h3>
         
         <div style={styles.row}>
           <div>
-            <div style={styles.settingTitle}>Change Password</div>
-            <div style={styles.settingSubtitle}>Update your account password.</div>
-          </div>
-          <button style={styles.secondaryBtn}>🔑 Change Password</button>
-        </div>
-
-        <div style={styles.divider}></div>
-
-        <div style={styles.row}>
-          <div>
             <div style={styles.settingTitle}>Two-Factor Authentication</div>
             <div style={styles.settingSubtitle}>Add an extra layer of security to your account.</div>
           </div>
-          <Switch checked={twoFactor} onChange={() => setTwoFactor(!twoFactor)} />
+          <Switch checked={profile.twoFactorEnabled} onChange={() => setProfile({...profile, twoFactorEnabled: !profile.twoFactorEnabled})} />
         </div>
       </div>
 
-      {/* Section 4: Preferences */}
       <div style={styles.card}>
         <h3 style={styles.cardTitle}>Preferences</h3>
         
@@ -95,7 +115,7 @@ function Profile() {
             <div style={styles.settingTitle}>Preferred Language</div>
             <div style={styles.settingSubtitle}>Select your preferred language for the application.</div>
           </div>
-          <select style={styles.select}>
+          <select style={styles.select} value={profile.language || 'English'} onChange={(e)=>setProfile({...profile,language:e.target.value})}>
             <option>English</option>
             <option>Spanish</option>
             <option>Filipino</option>
@@ -109,7 +129,7 @@ function Profile() {
             <div style={styles.settingTitle}>Receive Newsletter</div>
             <div style={styles.settingSubtitle}>Receive updates and special offers via email.</div>
           </div>
-          <Switch checked={newsletter} onChange={() => setNewsletter(!newsletter)} />
+          <Switch checked={profile.newsletter ?? true} onChange={() => setProfile({...profile, newsletter: !(profile.newsletter ?? true)})} />
         </div>
       </div>
 
@@ -117,7 +137,6 @@ function Profile() {
   );
 }
 
-// --- Helper Switch Component ---
 function Switch({ checked, onChange }) {
   return (
     <div 
