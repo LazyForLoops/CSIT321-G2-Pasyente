@@ -1,3 +1,7 @@
+// ----------------------------------------------------------------------------------
+// CORRECTED CODE for frontend/src/App.jsx
+// ----------------------------------------------------------------------------------
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -36,17 +40,20 @@ function App() {
     setCurrentView('login');
   };
 
-  // --- AUTHENTICATION CHECK ---
-  if (!user) {
-    if (currentView === 'login') {
-      return <Login onLogin={handleLogin} onSwitchToRegister={() => setCurrentView('register')} />;
-    } else {
-      return <Register onRegister={handleLogin} onSwitchToLogin={() => setCurrentView('login')} />;
+  // The logic for deciding what to render is now wrapped inside the return statement
+  // This ensures ALL components are children of <BrowserRouter>
+  const renderContent = () => {
+    // --- AUTHENTICATION CHECK ---
+    if (!user) {
+      if (currentView === 'login') {
+        return <Login onLogin={handleLogin} onSwitchToRegister={() => setCurrentView('register')} />;
+      } else {
+        return <Register onRegister={handleLogin} onSwitchToLogin={() => setCurrentView('login')} />;
+      }
     }
-  }
 
-  return (
-    <BrowserRouter>
+    // --- AUTHENTICATED LAYOUT ---
+    return (
       <div style={styles.layout}>
         
         <TopNavbar user={user} onLogout={handleLogout} />
@@ -56,6 +63,7 @@ function App() {
           <div style={styles.scrollableArea}>
             
             <Routes>
+              {/* All routes are now protected by the 'if (!user)' check above */}
               <Route path="/" element={<Dashboard userName={user} />} />
               <Route path="/dashboard" element={<Navigate to="/" />} />
               <Route path="/records" element={<HealthRecords />} />
@@ -76,6 +84,14 @@ function App() {
           </div>
         </main>
       </div>
+    );
+  };
+  
+  return (
+    // <BrowserRouter> is now the unconditional top-level component, 
+    // wrapping the entire application, whether authenticated or not.
+    <BrowserRouter>
+      {renderContent()}
     </BrowserRouter>
   );
 }
